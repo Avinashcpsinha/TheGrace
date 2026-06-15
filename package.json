@@ -1,0 +1,37 @@
+{
+  "name": "the-grace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Grace — cinematic e-commerce for a premium trophy & awards manufacturer (Lajpat Nagar, Delhi)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "ingest": "node scripts/ingest.mjs",
+    "seed": "node scripts/ingest.mjs"
+  },
+  "dependencies": {
+    "framer-motion": "^12.0.0",
+    "gsap": "^3.12.7",
+    "lenis": "^1.1.20",
+    "next": "^15.5.0",
+    "nodemailer": "^6.9.16",
+    "razorpay": "^2.9.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
+    "sharp": "^0.34.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/nodemailer": "^6.4.17",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}

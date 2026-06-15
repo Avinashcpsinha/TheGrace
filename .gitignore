@@ -1,0 +1,27 @@
+# deps / build
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# generated media is COMMITTED so Vercel serves it (the ingest source
+# `Images/` below is not deployed). Re-run `npm run ingest` to regenerate.
+
+# source photo library (261 MB, kept locally only — not needed to deploy).
+# Leading slash anchors to repo root so it does NOT also match
+# public/images/ (git is case-insensitive on Windows: Images == images).
+/Images/
+
+# runtime database & uploads
+data/
+public/uploads/
+
+# env
+.env
+.env.local
+.env.production
+
+# misc
+.DS_Store
+Thumbs.db
