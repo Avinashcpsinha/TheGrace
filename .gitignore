@@ -13,9 +13,10 @@ next-env.d.ts
 # public/images/ (git is case-insensitive on Windows: Images == images).
 /Images/
 
-# runtime database & uploads
-data/
-public/uploads/
+# runtime database & uploads (leading slash = repo root only, so this does
+# NOT match src/data/ — the committed catalog the app imports)
+/data/
+/public/uploads/
 
 # env
 .env

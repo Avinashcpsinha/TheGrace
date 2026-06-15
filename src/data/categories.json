@@ -1,0 +1,121 @@
+[
+ {
+  "slug": "trophies",
+  "name": "Trophies",
+  "blurb": "Cups, columns and sculptural awards in metal, crystal, acrylic and wood.",
+  "count": 60,
+  "droppedDuplicatesOrOverCap": 108,
+  "libraryTotal": 168,
+  "subcategories": [
+   {
+    "slug": "designer",
+    "name": "Designer Trophies",
+    "count": 60
+   }
+  ]
+ },
+ {
+  "slug": "medals",
+  "name": "Medals",
+  "blurb": "Die-struck medals with custom ribbons, in gold, silver and bronze finishes.",
+  "count": 5,
+  "droppedDuplicatesOrOverCap": 0,
+  "libraryTotal": 5,
+  "subcategories": [
+   {
+    "slug": "medals",
+    "name": "Medals",
+    "count": 5
+   }
+  ]
+ },
+ {
+  "slug": "mementos",
+  "name": "Mementos",
+  "blurb": "Personalised keepsakes engraved for farewells, felicitations and milestones.",
+  "count": 0,
+  "droppedDuplicatesOrOverCap": 0,
+  "libraryTotal": 0,
+  "subcategories": []
+ },
+ {
+  "slug": "merchandise",
+  "name": "Merchandise",
+  "blurb": "Branded merchandise — desk pieces, drinkware, keychains and lapel pins.",
+  "count": 48,
+  "droppedDuplicatesOrOverCap": 69,
+  "libraryTotal": 117,
+  "subcategories": [
+   {
+    "slug": "branded",
+    "name": "Branded Goods",
+    "count": 36
+   },
+   {
+    "slug": "desk-and-decor",
+    "name": "Desk & Décor",
+    "count": 6
+   },
+   {
+    "slug": "keychains",
+    "name": "Keychains",
+    "count": 4
+   },
+   {
+    "slug": "lapel-pins",
+    "name": "Lapel Pins & Badges",
+    "count": 2
+   }
+  ]
+ },
+ {
+  "slug": "gifting",
+  "name": "Corporate Gifting",
+  "blurb": "Executive gift sets, hampers and travel gear for clients and teams.",
+  "count": 48,
+  "droppedDuplicatesOrOverCap": 193,
+  "libraryTotal": 241,
+  "subcategories": [
+   {
+    "slug": "executive",
+    "name": "Executive Gifts",
+    "count": 43
+   },
+   {
+    "slug": "travel-gear",
+    "name": "Travel Gear",
+    "count": 5
+   }
+  ]
+ },
+ {
+  "slug": "sports",
+  "name": "Sports Awards",
+  "blurb": "Tournament cups, player-of-the-match awards and league season trophies.",
+  "count": 44,
+  "droppedDuplicatesOrOverCap": 6,
+  "libraryTotal": 50,
+  "subcategories": [
+   {
+    "slug": "tournament",
+    "name": "Tournament",
+    "count": 44
+   }
+  ]
+ },
+ {
+  "slug": "khelo-india",
+  "name": "Khelo India Legacy",
+  "blurb": "From our workshop to the national podium — official Khelo India Games awards.",
+  "count": 36,
+  "droppedDuplicatesOrOverCap": 22,
+  "libraryTotal": 58,
+  "subcategories": [
+   {
+    "slug": "cups",
+    "name": "Cups & Trophies",
+    "count": 36
+   }
+  ]
+ }
+]
