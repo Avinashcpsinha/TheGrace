@@ -1,0 +1,10 @@
+# Vercel CLI uploads the local dir and does NOT read .gitignore, so exclude
+# the heavy bits here. Generated media under public/ IS deployed (needed at
+# runtime); the 261 MB source photo library is not.
+/Images/
+node_modules
+.next
+.git
+data
+public/uploads
+*.tsbuildinfo
