@@ -15,6 +15,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { enquiryWhatsAppLink } from "@/lib/order-links";
 import { CollectionHero } from "@/components/catalog/CollectionHero";
+import { VideoHero } from "@/components/catalog/VideoHero";
 import { FilterBar } from "@/components/catalog/FilterBar";
 import { SortSelect } from "@/components/catalog/SortSelect";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
@@ -26,6 +27,20 @@ import {
   sortProducts,
   type RawSearchParams,
 } from "@/components/catalog/filters";
+
+/**
+ * Cinematic video hero per category. The trophy-pages film leads the Trophies
+ * collection; the book-opening film backs the rest. Slugs absent here fall
+ * back to the static CollectionHero backdrop.
+ */
+const CATEGORY_VIDEO: Record<string, { src: string; poster: string }> = {
+  trophies: { src: "/Premium-Trophies.mp4", poster: "/images/site/trophies-hero-poster.webp" },
+  sports: { src: "/Premium-Trophies.mp4", poster: "/images/site/trophies-hero-poster.webp" },
+  merchandise: { src: "/Homepagevideo.mp4", poster: "/images/site/book-hero-poster.webp" },
+  gifting: { src: "/Homepagevideo.mp4", poster: "/images/site/book-hero-poster.webp" },
+  medals: { src: "/Homepagevideo.mp4", poster: "/images/site/book-hero-poster.webp" },
+  mementos: { src: "/Homepagevideo.mp4", poster: "/images/site/book-hero-poster.webp" },
+};
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -90,7 +105,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     { label: category.name },
   ];
 
-  /* ── empty category (e.g. Mementos): made-to-order panel ─────────── */
+  /* ── empty category: made-to-order panel ─────────────────────────── */
   if (products.length === 0) {
     const also = curatedPicks(await getAllProducts(), slug);
     const others = getCategories().filter((c) => c.count > 0);
@@ -104,26 +119,26 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               Made to order
             </p>
             <h2 className="mt-4 font-display text-4xl text-ivory [text-wrap:balance] md:text-5xl">
-              Mementos are crafted to order
+              {category.name} — crafted to order
             </h2>
             <p className="mx-auto mt-5 max-w-xl leading-relaxed text-muted">
-              Every memento we make is personal — a farewell, a felicitation, a silver
+              Every piece we make is personal — a farewell, a felicitation, a silver
               jubilee. Share the occasion, names and quantity, and our workshop will
-              design, engrave and finish a keepsake around it. Most pieces are ready
+              design, engrave and finish it around your moment. Most pieces are ready
               within 7–10 days.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <Button
-                href={enquiryWhatsAppLink("custom mementos")}
+                href={enquiryWhatsAppLink(`custom ${category.name.toLowerCase()}`)}
                 variant="whatsapp"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Enquire about custom mementos on WhatsApp"
+                aria-label={`Enquire about custom ${category.name.toLowerCase()} on WhatsApp`}
               >
                 Enquire on WhatsApp
               </Button>
-              <Button href="/customization" variant="outline" aria-label="Design your own memento">
-                Design your memento
+              <Button href="/customization" variant="outline" aria-label="Design your own piece">
+                Design your piece
               </Button>
             </div>
             <div className="gold-rule mx-auto mt-10 w-24" aria-hidden="true" />
@@ -164,20 +179,18 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   return (
     <>
-      <CollectionHero crumbs={crumbs} eyebrow="Collection" title={category.name} sub={category.blurb} bg={{ src: heroForCategory(slug) }}>
-        {slug === "khelo-india" && (
-          <div className="border-y border-gold/20 bg-gold/[0.04] py-3">
-            <p className="mx-auto max-w-7xl px-6 text-center text-[0.65rem] uppercase tracking-[0.3em] md:text-xs">
-              <span className="gold-text font-semibold">Official Games legacy</span>
-              <span className="text-muted">
-                {" "}
-                — makers of the official Khelo India Games awards, from our Lajpat Nagar
-                workshop to the national podium
-              </span>
-            </p>
-          </div>
-        )}
-      </CollectionHero>
+      {CATEGORY_VIDEO[slug] ? (
+        <VideoHero
+          crumbs={crumbs}
+          eyebrow="Collection"
+          title={category.name}
+          sub={category.blurb}
+          videoSrc={CATEGORY_VIDEO[slug].src}
+          poster={CATEGORY_VIDEO[slug].poster}
+        />
+      ) : (
+        <CollectionHero crumbs={crumbs} eyebrow="Collection" title={category.name} sub={category.blurb} bg={{ src: heroForCategory(slug) }} />
+      )}
 
       <section className="mx-auto max-w-7xl px-6 pb-24 pt-12">
         <div className="border-y border-line/70 py-5">

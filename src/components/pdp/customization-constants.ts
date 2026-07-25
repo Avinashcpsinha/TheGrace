@@ -8,11 +8,9 @@
 export const PRODUCT_TYPES = [
   "Trophies",
   "Medals",
-  "Mementos",
   "Plaques",
-  "Shields",
+  "Merchandise",
   "Corporate Awards",
-  "Sports Awards",
   "Other",
 ] as const;
 

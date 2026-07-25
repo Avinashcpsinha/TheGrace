@@ -4,7 +4,7 @@ export const site = {
   legalName: "The Grace Awards & Trophies",
   tagline: "Crafted for moments that matter.",
   description:
-    "Premium trophy and awards manufacturer in Delhi — custom trophies, medals, mementos and corporate gifting. Makers of official Khelo India Games awards.",
+    "Premium trophy and awards manufacturer in Delhi — custom trophies, medals, mementos, corporate gifting and branded merchandise, handcrafted and engraved to order in Lajpat Nagar.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
 
   // ordering channels (critical path)

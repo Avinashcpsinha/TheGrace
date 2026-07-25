@@ -10,9 +10,9 @@ import { MaterialsMarquee } from "@/components/catalog/MaterialsMarquee";
 import { ContactCTA } from "@/components/home/ContactCTA";
 
 export const metadata: Metadata = {
-  title: "About — Makers of the Khelo India Awards",
+  title: "About — The Workshop Behind the Awards",
   description:
-    "The Grace is a premium trophy and awards manufacturer in Lajpat Nagar, New Delhi — makers of the official Khelo India Games awards. Two decades of design, casting, engraving and finishing under one roof.",
+    "The Grace is a premium trophy and awards manufacturer in Lajpat Nagar, New Delhi — trophies, medals, mementos, corporate gifting and branded merchandise. Two decades of design, casting, engraving and finishing under one roof.",
   alternates: { canonical: "/about" },
 };
 
@@ -54,10 +54,10 @@ export default function AboutPage() {
               The workshop behind the <em className="gold-text">nation&rsquo;s honours</em>
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
-              From a single bench in Lajpat Nagar to the official awards of the Khelo India
-              Games, {site.name} has spent two decades turning moments of achievement into
-              objects worth keeping. Every trophy that leaves our doors is designed, cast,
-              engraved and finished by the same hands.
+              From a single bench in Lajpat Nagar to podiums across the country, {site.name} has
+              spent two decades turning moments of achievement into objects worth keeping. Every
+              trophy that leaves our doors is designed, cast, engraved and finished by the same
+              hands.
             </p>
           </Reveal>
         </div>
@@ -95,8 +95,8 @@ export default function AboutPage() {
             </blockquote>
             <p className="leading-relaxed text-muted">
               That conviction is why schools, sports federations, PSUs and corporate houses keep
-              coming back — and why, when the Khelo India Games needed a maker for their national
-              podium, the work came to Lajpat Nagar.
+              coming back — and why, when an occasion calls for something worth keeping, the work
+              comes to Lajpat Nagar.
             </p>
           </Reveal>
         </div>
@@ -134,27 +134,27 @@ export default function AboutPage() {
         </ol>
       </section>
 
-      {/* Khelo India legacy */}
-      <section aria-label="Khelo India legacy" className="spotlight border-y border-line">
+      {/* Trusted at scale */}
+      <section aria-label="Trusted at scale" className="spotlight border-y border-line">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-20 lg:grid-cols-[1.2fr_1fr]">
           <Reveal className="space-y-5">
             <p className="text-[0.7rem] font-medium uppercase tracking-[0.35em] text-gold/90">
-              National legacy
+              Trusted at scale
             </p>
             <h2 className="font-display text-4xl leading-[1.06] text-ivory [text-wrap:balance] md:text-5xl">
-              Makers of the official Khelo India Games awards
+              A finish that holds, from one piece to ten thousand
             </h2>
             <p className="max-w-xl leading-relaxed text-muted">
-              When the country celebrates its young athletes, the trophies they lift are ours.
-              Producing for a national programme means scale without a dip in finish — thousands
-              of pieces, each held to the same standard as a one-off commission.
+              Schools, sports federations, PSUs and corporate houses come to us for programmes
+              that run into the thousands — and every piece is held to the same standard as a
+              one-off commission. Scale, without a dip in finish.
             </p>
           </Reveal>
           <Reveal delay={120}>
             <div className="photo-well relative aspect-square overflow-hidden rounded-3xl">
               <Image
                 src="/images/site/hero-trophy-alt.webp"
-                alt="A Khelo India ceremonial cup by The Grace"
+                alt="A ceremonial cup crafted by The Grace"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 className="object-contain p-8"

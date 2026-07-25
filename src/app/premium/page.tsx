@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getCategories, getCategory, getPremiumProducts } from "@/lib/catalog";
-import { HERO } from "@/lib/hero-images";
-import { CollectionHero } from "@/components/catalog/CollectionHero";
+import { VideoHero } from "@/components/catalog/VideoHero";
 import { MaterialsMarquee } from "@/components/catalog/MaterialsMarquee";
 import { FilterBar } from "@/components/catalog/FilterBar";
 import { SortSelect } from "@/components/catalog/SortSelect";
@@ -41,15 +40,16 @@ export default async function PremiumPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <CollectionHero
+      <VideoHero
         crumbs={[{ label: "Home", href: "/" }, { label: "Premium Collection" }]}
         eyebrow="The Premium Collection"
         title="Crafted for moments that matter"
         sub="Optical crystal, die-cast metal and 24-karat detailing — signature awards for evenings the room will speak about for years."
-        bg={{ src: HERO.premium }}
+        videoSrc="/Premeium.mp4"
+        poster="/images/site/premium-hero-poster.webp"
       >
         <MaterialsMarquee />
-      </CollectionHero>
+      </VideoHero>
 
       <section className="mx-auto max-w-7xl px-6 pb-24 pt-12">
         <div className="border-y border-line/70 py-5">

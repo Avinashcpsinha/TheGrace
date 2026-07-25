@@ -1,76 +1,35 @@
-import "server-only";
-import productsJson from "@/data/products.json";
-
 /**
- * Picks a strong catalogue image to use as a page's cinematic hero backdrop.
- * Preference: curated > premium > darker dominant (less white to darken) >
- * larger. Darker shots read best once the cinematic scrim is applied.
+ * Cinematic hero backdrops.
+ *
+ * The catalogue product shots are now transparent cut-outs — perfect on the
+ * light product cards, but not as full-bleed hero backdrops. So the page and
+ * category heroes use the dark studio trophy plates in public/images/site,
+ * which the HeroBackdrop treatment grades, washes and scrims.
  */
 
-interface PImg {
-  src: string;
-  width?: number;
-  height?: number;
-  dominant?: string;
-}
-interface P {
-  category: string;
-  premium?: boolean;
-  curated?: boolean;
-  inStock?: boolean;
-  images?: PImg[];
-}
+const TROPHY = "/images/site/hero-trophy.webp";
+const TROPHY_ALT = "/images/site/hero-trophy-alt.webp";
 
-const ALL: P[] = Array.isArray(productsJson)
-  ? (productsJson as P[])
-  : ((productsJson as { products: P[] }).products ?? []);
-
-const FALLBACK = "/images/site/hero-trophy.webp";
-
-function lum(hex?: string): number {
-  if (!hex) return 999;
-  const m = hex.replace("#", "");
-  if (m.length < 6) return 999;
-  const r = parseInt(m.slice(0, 2), 16),
-    g = parseInt(m.slice(2, 4), 16),
-    b = parseInt(m.slice(4, 6), 16);
-  return 0.299 * r + 0.587 * g + 0.114 * b;
-}
-
-function pick(filter: (p: P) => boolean): string | undefined {
-  const cands = ALL.filter(filter)
-    .map((p) => ({ p, im: p.images?.[0] }))
-    .filter((x): x is { p: P; im: PImg } => !!x.im && (x.im.width ?? 0) >= 800);
-  cands.sort(
-    (a, b) =>
-      Number(b.p.premium) - Number(a.p.premium) ||
-      lum(a.im.dominant) - lum(b.im.dominant) ||
-      (b.im.width ?? 0) * (b.im.height ?? 0) - (a.im.width ?? 0) * (a.im.height ?? 0)
-  );
-  return cands[0]?.im.src;
-}
-
-/** Manual overrides where the auto-pick isn't the most hero-worthy shot. */
-const CURATED: Record<string, string> = {
-  gifting: "/images/products/gifting/sovereign-gift-set-2565.webp",
+const CATEGORY_HERO: Record<string, string> = {
+  trophies: TROPHY,
+  merchandise: TROPHY_ALT,
+  gifting: TROPHY_ALT,
+  medals: TROPHY,
+  mementos: TROPHY,
+  sports: TROPHY_ALT,
 };
 
-/** Best hero image for a category slug (override → curated → any). */
+/** Best hero image for a category slug. */
 export function heroForCategory(slug: string): string {
-  return (
-    CURATED[slug] ??
-    pick((p) => p.category === slug && !!p.curated) ??
-    pick((p) => p.category === slug) ??
-    FALLBACK
-  );
+  return CATEGORY_HERO[slug] ?? TROPHY;
 }
 
-/** Hand-tuned heroes for the marquee + editorial pages (strong trophy shots). */
+/** Hand-tuned heroes for the marquee + editorial pages. */
 export const HERO = {
-  premium: "/images/site/hero-trophy.webp",
-  standard: heroForCategory("trophies"),
-  products: heroForCategory("sports"),
-  about: "/images/site/hero-trophy-alt.webp",
-  contact: heroForCategory("khelo-india"),
-  customization: heroForCategory("trophies"),
+  premium: TROPHY,
+  standard: TROPHY,
+  products: TROPHY_ALT,
+  about: TROPHY_ALT,
+  contact: TROPHY,
+  customization: TROPHY,
 } as const;

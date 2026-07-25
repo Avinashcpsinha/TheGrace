@@ -29,9 +29,12 @@ edited, with a *reset* button to undo.
 
 ## Adding new products (photos)
 
-1. Copy the photos into the right folder inside `Images/` on the server
-   (e.g. `Images/Trophies/`). **Name the file what you want the product called** —
-   `Golden-Lotus-Cup.jpeg` becomes "Golden Lotus Cup".
+1. Copy the photos into the right folder inside `public/New products/` on the server
+   (e.g. `public/New products/Trophies/`). The six folders there — Trophies, Merchandise,
+   Gifting, Medals, Momentos, Sports — are exactly the categories in the shop menu.
+   **Name the file what you want the product called** — `Golden-Lotus-Cup.jpeg` becomes
+   "Golden Lotus Cup". Shoot on a plain white background: the site automatically cuts the
+   background out and places the piece on black.
 2. Ask your developer to run: `npm run ingest` then `npm run build` (or do it yourself —
    two commands in the project folder).
 3. Set the price in **Admin → Products**.

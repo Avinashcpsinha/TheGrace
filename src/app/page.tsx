@@ -1,18 +1,13 @@
 import { VideoIntroHero } from "@/components/book/VideoIntroHero";
-import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { CategoryShowcase } from "@/components/home/CategoryShowcase";
 import { CraftStory } from "@/components/home/CraftStory";
-import { KheloIndiaBanner } from "@/components/home/KheloIndiaBanner";
+import { HeritageBanner } from "@/components/home/HeritageBanner";
 import { Testimonials } from "@/components/home/Testimonials";
 import { ContactCTA } from "@/components/home/ContactCTA";
-import {
-  getAllProducts,
-  getCategories,
-  getFeaturedProducts,
-} from "@/lib/catalog";
+import { getAllProducts, getCategories } from "@/lib/catalog";
 
 export default async function HomePage() {
-  const [featured, all] = await Promise.all([getFeaturedProducts(8), getAllProducts()]);
+  const all = await getAllProducts();
   const categories = getCategories();
 
   // a cover image per category for the showcase
@@ -31,7 +26,7 @@ export default async function HomePage() {
   return (
     <>
       <VideoIntroHero
-        videoSrc="/Homepagevideo.mp4"
+        videoSrc="/Grace-Video8k.mp4"
         posterCover="/images/site/intro-cover.webp"
         posterOpen="/images/site/intro-open.webp"
         leftPage={{
@@ -47,9 +42,10 @@ export default async function HomePage() {
       />
 
       <div id="after-book" className="relative z-10 bg-ink">
-        <FeaturedProducts products={featured} />
+        {/* the six collections lead the page — the first thing after the book
+            opens is where the customer chooses what they came for */}
         <CategoryShowcase categories={categories} covers={covers} />
-        <KheloIndiaBanner />
+        <HeritageBanner />
         <CraftStory />
         <Testimonials />
         <ContactCTA />

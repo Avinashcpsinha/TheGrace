@@ -14,7 +14,7 @@ Razorpay/COD, and WhatsApp-first ordering throughout.
 
 ```bash
 npm install
-npm run ingest     # builds the catalog from the ./Images folder (see below)
+npm run ingest     # builds the catalog from ./public/New products (see below)
 npm run dev        # http://localhost:3000
 ```
 
@@ -28,28 +28,44 @@ npm start
 > No environment variables are required to run. Payments, email and admin password all have safe
 > demo defaults — see **Configuration**.
 
-## The catalog comes from the `Images/` folder
+## The catalog comes from the `public/New products/` folder
 
-`npm run ingest` (scripts/ingest.mjs) scans `./Images/<Category>/…` and generates everything:
+`npm run ingest` (scripts/ingest.mjs) scans `./public/New products/<Category>/…` — the customer's
+photo library — and generates the entire catalog. The folder list below **is** the site
+navigation: the header dropdown, the mobile menu, the homepage bento and every
+`/category/<slug>` page read the generated `categories.json`, so adding or renaming a folder is
+the only edit needed to change what the shop sells.
 
-| Folder | Category | Notes |
+| Folder | Category | Slug |
 |---|---|---|
-| `Images/Trophies` | Trophies | subcategories inferred (metal / crystal / acrylic / wooden / resin / designer) |
-| `Images/Medals` | Medals | |
-| `Images/Momentos` | Mementos | empty folder → elegant "made to order" category page |
-| `Images/Merchandise` | Merchandise | lapel pins, keychains, desk & décor |
-| `Images/Gifting` | Corporate Gifting | travel gear, gift sets, executive |
-| `Images/Sports` | Sports Awards | |
-| `Images/Khelo india` | Khelo India Legacy | the national-podium collection |
+| `New products/Trophies` | Trophies | `trophies` |
+| `New products/Merchandise` | Merchandise | `merchandise` |
+| `New products/Gifting` | Corporate Gifting | `gifting` |
+| `New products/Medals` | Medals | `medals` |
+| `New products/Momentos` | Mementos | `mementos` |
+| `New products/Sports` | Sports Awards | `sports` |
 
-The pipeline: content-hash **dedupe** → **WebP** renditions (≤1200px main + 480px thumb + 16px blur
-placeholder, 261 MB → ~16 MB) → dominant-colour extraction → deterministic naming (meaningful
-filenames are prettified; WhatsApp/camera filenames get curated luxury names) → pricing,
-premium/standard split, sizes, materials, occasions → `src/data/products.json`,
-`categories.json`, `hero.json`.
+The pipeline: content-hash **dedupe** → **black-background keying** (scripts/black-bg.mjs — see
+below) → **WebP** renditions (≤1200px main + 480px thumb + 16px blur placeholder, 112 MB →
+~19 MB) → deterministic naming (meaningful filenames are prettified; WhatsApp/camera/UUID
+filenames get curated house names) → pricing, premium/standard split, sizes, materials,
+occasions → `src/data/products.json`, `categories.json`, `hero.json`.
 
-**To add products:** drop photos into the right folder and re-run `npm run ingest`, then rebuild.
-Give files meaningful names (`Khelo-India-Cup-Gold.jpeg`) and those names are used verbatim.
+### Every plate is keyed onto black
+
+The library is shot on white and light-grey studio sweeps; the storefront is a black house. So
+`scripts/black-bg.mjs` flood-fills the sweep away from the border inward, feathers the silhouette
+and premultiplies against `#000000`. The `.photo-well` behind every product image is the same
+pure black, so the photo's field and the card are indistinguishable — only the piece shows.
+
+Shots that are already on a dark background pass through untouched. A photo whose subject would
+be destroyed by the key (a white product on a white sweep) is dropped rather than published
+damaged — the ingest prints the count when that happens.
+
+**To add products:** drop photos into the right folder under `public/New products/` and re-run
+`npm run ingest`, then rebuild. Give files meaningful names (`Golden-Lotus-Cup.jpeg`) and those
+names are used verbatim. The source folder is git- and deploy-ignored; only the keyed plates
+under `public/images/products/` ship.
 
 ## Configuration (`.env.local`)
 

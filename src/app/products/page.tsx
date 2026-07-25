@@ -28,7 +28,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     ? `Trophies, medals and awards matching “${f.q}” — handcrafted by The Grace, Lajpat Nagar, Delhi.`
     : cat
       ? `${cat.blurb} Browse ${cat.name.toLowerCase()} from The Grace, Delhi.`
-      : "Browse the complete collection of trophies, medals, mementos and corporate awards — handcrafted in Delhi by The Grace, makers of the official Khelo India Games awards.";
+      : "Browse the complete collection of trophies, medals, mementos, corporate gifting and branded merchandise — handcrafted and engraved to order in Delhi by The Grace.";
   return { title, description };
 }
 
@@ -49,7 +49,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
         crumbs={[{ label: "Home", href: "/" }, { label: "All Products" }]}
         eyebrow="The Complete Collection"
         title="All Products"
-        sub="Trophies, medals, merchandise and corporate gifting — every piece from our Lajpat Nagar workshop, ready to be engraved with your moment."
+        sub="Trophies, medals, mementos, corporate gifting and branded merchandise — every piece from our Lajpat Nagar workshop, ready to be engraved with your moment."
         bg={{ src: HERO.products }}
       />
 

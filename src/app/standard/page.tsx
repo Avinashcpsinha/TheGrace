@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getCategories, getCategory, getStandardProducts } from "@/lib/catalog";
-import { HERO } from "@/lib/hero-images";
-import { CollectionHero } from "@/components/catalog/CollectionHero";
+import { VideoHero } from "@/components/catalog/VideoHero";
 import { FilterBar } from "@/components/catalog/FilterBar";
 import { SortSelect } from "@/components/catalog/SortSelect";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
@@ -46,12 +45,13 @@ export default async function StandardPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <CollectionHero
+      <VideoHero
         crumbs={[{ label: "Home", href: "/" }, { label: "Standard Collection" }]}
         eyebrow="The Standard Collection"
         title="Every podium deserves shine"
         sub="Crowd-pleasing trophies, medals and keepsakes at honest prices — built for leagues, schools, offices and every win in between."
-        bg={{ src: HERO.standard }}
+        videoSrc="/Standard.mp4"
+        poster="/images/site/standard-hero-poster.webp"
       >
         <div className="border-y border-line/70 bg-ink-2/60">
           <ul
@@ -84,7 +84,7 @@ export default async function StandardPage({ searchParams }: PageProps) {
             ))}
           </ul>
         </div>
-      </CollectionHero>
+      </VideoHero>
 
       <section className="mx-auto max-w-7xl px-6 pb-24 pt-12">
         <div className="border-y border-line/70 py-5">

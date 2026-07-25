@@ -5,7 +5,7 @@
  *  VideoIntroHero — the cinematic landing intro.
  * ════════════════════════════════════════════════════════════════════
  *
- *  Plays public/Homepagevideo.mp4 (the leather "THE GRACE" book opening)
+ *  Plays public/Grace-Video8k.mp4 (the leather "THE GRACE" book opening)
  *  full-screen on a dark stage, then — once the book is open — freezes on
  *  the open spread and reveals two clickable "pages":
  *

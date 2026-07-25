@@ -29,7 +29,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     title: q ? `Search — “${q}”` : "Search the Catalogue",
     description: q
       ? `Trophies, medals and awards matching “${q}” at The Grace, Delhi.`
-      : "Search trophies, medals, mementos and corporate awards by name, material or occasion.",
+      : "Search trophies, medals, mementos, corporate gifting and branded merchandise by name, material or occasion.",
     robots: { index: false, follow: true },
   };
 }

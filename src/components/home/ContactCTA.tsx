@@ -11,7 +11,7 @@ import { enquiryWhatsAppLink, mailtoLink, telLink } from "@/lib/order-links";
 export function ContactCTA() {
   const emailHref = mailtoLink(
     "Event enquiry — awards & trophies",
-    "Hi The Grace!\n\nI'm planning an event and would like to discuss trophies, awards or gifting.\n\nOccasion:\nQuantity:\nDate:\n"
+    "Hi The Grace!\n\nI'm planning an event and would like to discuss trophies, medals, mementos, corporate gifts or merchandise.\n\nOccasion:\nQuantity:\nDate:\n"
   );
 
   return (

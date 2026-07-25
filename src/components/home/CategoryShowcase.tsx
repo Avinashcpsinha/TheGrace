@@ -10,6 +10,7 @@ import Image from "next/image";
 import type { Category } from "@/lib/types";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
+import { Button } from "@/components/ui/Button";
 
 type Cover = { src: string; blur: string };
 type TileVariant = "large" | "standard" | "wide";
@@ -189,6 +190,12 @@ export function CategoryShowcase({
           </Reveal>
         ))}
       </div>
+
+      <Reveal className="mt-14 text-center" delay={120}>
+        <Button href="/products" variant="outline" size="lg">
+          Explore all products
+        </Button>
+      </Reveal>
     </section>
   );
 }

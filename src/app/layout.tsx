@@ -37,7 +37,8 @@ export const metadata: Metadata = {
     "custom trophies Delhi",
     "corporate awards",
     "medals manufacturer India",
-    "Khelo India trophies",
+    "corporate gifting Delhi",
+    "custom merchandise Delhi",
     "awards Lajpat Nagar",
   ],
   openGraph: {

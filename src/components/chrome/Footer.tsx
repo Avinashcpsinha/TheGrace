@@ -52,7 +52,7 @@ export function Footer() {
             {site.tagline}
           </p>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Makers of the official Khelo India Games awards.
+            Handcrafted trophies, medals, mementos &amp; corporate gifts — engraved to order in Lajpat Nagar.
           </p>
           <div className="mt-6 flex items-center gap-3">
             <a

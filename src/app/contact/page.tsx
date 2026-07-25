@@ -10,7 +10,7 @@ import { ContactForm } from "@/components/contact/ContactForm";
 export const metadata: Metadata = {
   title: "Contact — Talk to The Grace, Delhi",
   description:
-    "Call, WhatsApp or email The Grace — premium trophy & awards makers in Lajpat Nagar, New Delhi. Bulk orders, custom design and Khelo India awards.",
+    "Call, WhatsApp or email The Grace — premium trophy & awards makers in Lajpat Nagar, New Delhi. Bulk orders, custom design, trophies, medals, mementos, corporate gifting and merchandise.",
   alternates: { canonical: "/contact" },
 };
 

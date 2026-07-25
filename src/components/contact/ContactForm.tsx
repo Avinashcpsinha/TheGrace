@@ -14,7 +14,7 @@ import { waLink, mailtoLink } from "@/lib/order-links";
 const TOPICS = [
   "Bulk / corporate order",
   "Custom design",
-  "Khelo India / sports event",
+  "Sports / event awards",
   "Existing order",
   "Something else",
 ];

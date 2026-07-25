@@ -9,7 +9,7 @@ import { BULK_TIERS } from "@/lib/pricing";
 export const metadata: Metadata = {
   title: "Customization — Design Your Own Award",
   description:
-    "Bespoke trophies, medals and mementos from The Grace, Delhi. Share your vision, approve a free design proof, and we craft and deliver PAN India in 7–10 days.",
+    "Bespoke trophies, medals, mementos, corporate gifts and branded merchandise from The Grace, Delhi. Share your vision, approve a free design proof, and we craft and deliver PAN India in 7–10 days.",
   alternates: { canonical: "/customization" },
 };
 
@@ -52,9 +52,8 @@ export default function CustomizationPage() {
               </span>
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-muted md:text-lg">
-              From a school sports day to a national podium — the same workshop that crafts
-              the Khelo India Games awards will sketch, sculpt and engrave a piece that could
-              belong to no other ceremony.
+              From a school sports day to a national podium — our Lajpat Nagar workshop will
+              sketch, sculpt and engrave a piece that could belong to no other ceremony.
             </p>
             <div className="gold-rule mt-1 w-28" aria-hidden="true" />
           </Reveal>

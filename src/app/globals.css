@@ -212,10 +212,11 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-/* warm ivory photo well — flatters both studio and workshop photos */
+/* studio photo well — catalogue plates are keyed onto pure #000000 by the
+   ingest, so the well matches exactly: the photo's own field and the card
+   behind it are the same black, and only the piece itself is visible */
 .photo-well {
-  background:
-    radial-gradient(120% 90% at 50% 0%, #fcf9f2 0%, #efe9da 60%, #e4dcc8 100%);
+  background: #000000;
 }
 
 /* film grain overlay — apply to a fixed full-screen div */

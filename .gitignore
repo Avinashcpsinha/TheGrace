@@ -8,6 +8,11 @@ next-env.d.ts
 # generated media is COMMITTED so Vercel serves it (the ingest source
 # `Images/` below is not deployed). Re-run `npm run ingest` to regenerate.
 
+# customer photo library dropped into public/ (112 MB of source shots).
+# It is the ingest source only — the storefront serves the keyed plates the
+# ingest writes to public/images/products/, so this never needs deploying.
+/public/New products/
+
 # source photo library (261 MB, kept locally only — not needed to deploy).
 # Leading slash anchors to repo root so it does NOT also match
 # public/images/ (git is case-insensitive on Windows: Images == images).
