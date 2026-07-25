@@ -64,8 +64,14 @@ export function ProductCard({
         className="block focus-visible:outline-none"
         aria-label={`${product.name} — view details`}
       >
-        {/* photo */}
-        <div className="photo-well relative aspect-[4/5] overflow-hidden">
+        {/* photo — kept on the background it was shot on. The library is
+            square (377 of 379 shots), so a square well filled edge-to-edge
+            shows the studio sweep exactly as delivered, with no letterbox
+            band and no seam between the photo and the card. */}
+        <div
+          className="photo-well relative aspect-square overflow-hidden"
+          style={{ backgroundColor: img.dominant }}
+        >
           <Image
             src={img.thumb}
             alt={product.name}
@@ -74,7 +80,7 @@ export function ProductCard({
             placeholder="blur"
             blurDataURL={img.blur}
             priority={priority}
-            className="object-contain p-5 transition-transform duration-700 ease-[var(--ease-lux)] group-hover:scale-[1.06]"
+            className="object-cover transition-transform duration-700 ease-[var(--ease-lux)] group-hover:scale-[1.06]"
           />
           {/* light sweep on hover */}
           <span

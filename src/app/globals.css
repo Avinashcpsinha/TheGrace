@@ -212,11 +212,12 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-/* studio photo well — catalogue plates are keyed onto pure #000000 by the
-   ingest, so the well matches exactly: the photo's own field and the card
-   behind it are the same black, and only the piece itself is visible */
+/* studio photo well — catalogue photos keep the background they were shot on,
+   so each well is painted with that photo's own sweep colour via an inline
+   `background-color` (products.json → images[].dominant). This is only the
+   fallback for images that never reported one. */
 .photo-well {
-  background: #000000;
+  background: #f4f4f5;
 }
 
 /* film grain overlay — apply to a fixed full-screen div */

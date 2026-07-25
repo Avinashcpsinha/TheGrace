@@ -12,10 +12,10 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
 
-type Cover = { src: string; blur: string };
+type Cover = { src: string; blur: string; dominant?: string };
 type TileVariant = "large" | "standard" | "wide";
 
-const FALLBACK_COVER: Cover = { src: "/images/site/hero-trophy.webp", blur: "" };
+const FALLBACK_COVER: Cover = { src: "/images/site/hero-trophy.webp", blur: "", dominant: "#12121a" };
 
 function tileVariant(i: number, total: number): TileVariant {
   if (i < 2) return "large";
@@ -75,8 +75,10 @@ function Tile({
     ? ({ placeholder: "blur", blurDataURL: cover.blur } as const)
     : {};
   const alt = `${category.name} — representative piece from the collection`;
+  // the library is square, so square wells filled edge-to-edge show each
+  // cover on the background it was shot on, with no letterbox band
   const imgCls =
-    "object-contain transition-transform duration-700 ease-[var(--ease-lux)] group-hover:scale-[1.06]";
+    "object-cover transition-transform duration-700 ease-[var(--ease-lux)] group-hover:scale-[1.06]";
   const cardCls =
     "group card-surface h-full overflow-hidden rounded-2xl transition-[box-shadow,transform] duration-500 ease-[var(--ease-lux)] hover:shadow-[var(--shadow-gold)]";
 
@@ -97,14 +99,17 @@ function Tile({
             <ArrowBadge />
           </div>
         </div>
-        <div className="photo-well relative min-h-56 flex-1 overflow-hidden sm:min-h-0">
+        <div
+          className="photo-well relative min-h-56 flex-1 overflow-hidden sm:min-h-0"
+          style={{ backgroundColor: cover.dominant }}
+        >
           <Image
             src={cover.src}
             alt={alt}
             fill
             sizes="(max-width: 640px) 100vw, 60vw"
             {...blurProps}
-            className={`${imgCls} p-6`}
+            className={imgCls}
           />
           <Sweep />
         </div>
@@ -120,9 +125,8 @@ function Tile({
       className={`${cardCls} flex flex-col`}
     >
       <div
-        className={`photo-well relative overflow-hidden ${
-          isLarge ? "aspect-[4/3]" : "aspect-[4/5]"
-        }`}
+        style={{ backgroundColor: cover.dominant }}
+        className="photo-well relative aspect-square overflow-hidden"
       >
         <Image
           src={cover.src}
@@ -134,7 +138,7 @@ function Tile({
               : "(max-width: 1024px) 50vw, 25vw"
           }
           {...blurProps}
-          className={`${imgCls} ${isLarge ? "p-8" : "p-5"}`}
+          className={imgCls}
         />
         <Sweep />
       </div>

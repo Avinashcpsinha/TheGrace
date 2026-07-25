@@ -8,8 +8,9 @@
  *   • src/data/categories.json (category tree with counts — drives the nav dropdown)
  *   • src/data/hero.json       (curated hero/featured picks)
  *
- * Every rendered image is keyed onto pure black by scripts/black-bg.mjs — the
- * library is shot on white sweeps and the storefront is a black house.
+ * Photos are published with the background they were shot on — the studio
+ * sweep in the customer's image is preserved exactly, and each product records
+ * that sweep's colour so the card behind it can be painted to match.
  *
  * The six category folders are the single source of truth: the header
  * dropdown, the mobile menu, the homepage bento and /category/<slug> all read
@@ -23,7 +24,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
 import sharp from "sharp";
-import { keyOntoBlack, fromKeyed } from "./black-bg.mjs";
 
 const ROOT = path.resolve(process.cwd());
 const SRC = path.join(ROOT, "public", "New products");
@@ -365,44 +365,55 @@ async function collectCategory(cat, seenHashes) {
 
 /* ── image rendering ───────────────────────────────────────────────── */
 /**
- * Key the studio sweep away, composite onto #000000, and write the main /
- * thumb / blur set. Throws when the key cannot be trusted, so the caller
- * drops the photo instead of publishing a damaged cut-out.
+ * Write the main / thumb / blur set straight from the customer's photo — the
+ * shot's own studio background is kept exactly as delivered, no keying or
+ * recolouring. `dominant` is sampled from the photo so the card behind it can
+ * be painted the same colour and the plate blends into its frame.
  */
 async function renderImages(buf, outDir, slug) {
   await fs.mkdir(outDir, { recursive: true });
-  const keyed = await keyOntoBlack(buf, { maxWidth: 1200, maxHeight: 1500 });
-  if (keyed.status === "rejected") {
-    const err = new Error("background key rejected (subject would be damaged)");
-    err.code = "KEY_REJECTED";
-    throw err;
-  }
+  const img = sharp(buf, { failOn: "none" }).rotate();
 
-  const black = fromKeyed(keyed);
-
-  const main = await black
+  const main = await img
     .clone()
+    .resize({ width: 1200, height: 1500, fit: "inside", withoutEnlargement: true })
     .webp({ quality: 82 })
     .toBuffer({ resolveWithObject: true });
   await fs.writeFile(path.join(outDir, `${slug}.webp`), main.data);
 
-  const thumb = await black
+  const thumb = await img
     .clone()
     .resize({ width: 480, height: 600, fit: "inside", withoutEnlargement: true })
     .webp({ quality: 74 })
     .toBuffer();
   await fs.writeFile(path.join(outDir, `${slug}-thumb.webp`), thumb);
 
-  const blurBuf = await black.clone().resize(16).webp({ quality: 40 }).toBuffer();
+  const blurBuf = await img.clone().resize(16).webp({ quality: 40 }).toBuffer();
   const blur = `data:image/webp;base64,${blurBuf.toString("base64")}`;
 
-  return {
-    width: main.info.width,
-    height: main.info.height,
-    blur,
-    dominant: "#000000", // every plate now sits on the same black field
-    keyStatus: keyed.status,
-  };
+  // sample the sweep from the border ring, not the whole frame: sharp's
+  // dominant bin follows the subject on a busy shot, and it is the *edge*
+  // colour the card has to match for the plate to sit flush in its frame
+  let dominant = "#ffffff";
+  try {
+    const edge = await sharp(buf, { failOn: "none" })
+      .rotate()
+      .resize(24, 24, { fit: "fill" })
+      .removeAlpha()
+      .raw()
+      .toBuffer();
+    const px = [];
+    const at = (x, y) => { const i = (y * 24 + x) * 3; px.push([edge[i], edge[i + 1], edge[i + 2]]); };
+    for (let x = 0; x < 24; x++) { at(x, 0); at(x, 23); }
+    for (let y = 1; y < 23; y++) { at(0, y); at(23, y); }
+    const mid = (k) => {
+      const a = px.map((p) => p[k]).sort((m, n) => m - n);
+      return a[a.length >> 1];
+    };
+    dominant = `#${[mid(0), mid(1), mid(2)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+  } catch {}
+
+  return { width: main.info.width, height: main.info.height, blur, dominant };
 }
 
 /* ── main ──────────────────────────────────────────────────────────── */
@@ -418,7 +429,6 @@ async function main() {
   const usedSlugs = new Set();
   const usedNamesPerCat = new Map();
   const seenHashes = new Set();
-  let rejected = 0;
 
   for (const cat of CATEGORIES) {
     const res = await collectCategory(cat, seenHashes);
@@ -455,8 +465,8 @@ async function main() {
         try {
           rendered = await renderImages(item.buf, outDir, slug);
         } catch (e) {
-          if (e.code === "KEY_REJECTED") { skipped++; rejected++; }
-          else console.warn(`  ! skip ${item.base}: ${e.message}`);
+          console.warn(`  ! skip ${item.base}: ${e.message}`);
+          skipped++;
           continue;
         }
 
@@ -530,7 +540,7 @@ async function main() {
     });
     console.log(
       `  ✓ ${cat.name.padEnd(20)} ${String(done).padStart(3)} products` +
-        (res.total ? ` (from ${res.total} photos${skipped ? `, ${skipped} unkeyable` : ""})` : " (empty folder — custom-order category)")
+        (res.total ? ` (from ${res.total} photos${skipped ? `, ${skipped} unreadable` : ""})` : " (empty folder — custom-order category)")
     );
   }
 
@@ -569,7 +579,6 @@ async function main() {
 
   const premiumCount = products.filter((p) => p.premium).length;
   console.log(`\nDone: ${products.length} products (${premiumCount} premium / ${products.length - premiumCount} standard)`);
-  if (rejected) console.log(`Dropped ${rejected} photo(s) the black-background key could not handle cleanly.`);
   console.log(`Hero candidates: ${heroCandidates.length} → src/data/hero.json`);
 }
 

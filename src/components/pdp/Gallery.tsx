@@ -198,11 +198,12 @@ export function Gallery({
                       }}
                       aria-label={`Show image ${i + 1} of ${images.length}`}
                       aria-current={i === active ? "true" : undefined}
-                      className={`photo-well relative h-14 w-12 overflow-hidden rounded-lg border transition-colors duration-300 cursor-pointer ${
+                      style={{ backgroundColor: im.dominant }}
+                      className={`photo-well relative h-12 w-12 overflow-hidden rounded-lg border transition-colors duration-300 cursor-pointer ${
                         i === active ? "border-gold" : "border-line hover:border-gold/50"
                       }`}
                     >
-                      <Image src={im.thumb} alt="" fill sizes="48px" className="object-contain p-1" />
+                      <Image src={im.thumb} alt="" fill sizes="48px" className="object-cover" />
                     </button>
                   ))}
                 </div>
@@ -217,7 +218,10 @@ export function Gallery({
   return (
     <div>
       {/* main photo well */}
-      <div className="photo-well relative overflow-hidden rounded-3xl border border-line/60 shadow-[var(--shadow-card)]">
+      <div
+        className="photo-well relative overflow-hidden rounded-3xl border border-line/60 shadow-[var(--shadow-card)]"
+        style={{ backgroundColor: images[active]?.dominant }}
+      >
         <button
           ref={triggerRef}
           type="button"
@@ -227,7 +231,7 @@ export function Gallery({
           onMouseLeave={onLeave}
           aria-label={`Open full-screen view of ${name}`}
           aria-haspopup="dialog"
-          className="relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden"
+          className="relative block aspect-square w-full cursor-zoom-in overflow-hidden"
         >
           <div
             ref={zoomRef}
@@ -241,7 +245,7 @@ export function Gallery({
               sizes="(max-width: 1024px) 100vw, 50vw"
               placeholder="blur"
               blurDataURL={img.blur}
-              className="object-contain p-8 md:p-10"
+              className="object-cover"
             />
           </div>
         </button>
@@ -274,11 +278,12 @@ export function Gallery({
               onClick={() => setActive(i)}
               aria-label={`Show image ${i + 1} of ${images.length}`}
               aria-current={i === active ? "true" : undefined}
-              className={`photo-well relative h-20 w-16 overflow-hidden rounded-xl border transition-colors duration-300 cursor-pointer ${
+              style={{ backgroundColor: im.dominant }}
+              className={`photo-well relative h-16 w-16 overflow-hidden rounded-xl border transition-colors duration-300 cursor-pointer ${
                 i === active ? "border-gold" : "border-line hover:border-gold/50"
               }`}
             >
-              <Image src={im.thumb} alt="" fill sizes="64px" className="object-contain p-1.5" />
+              <Image src={im.thumb} alt="" fill sizes="64px" className="object-cover" />
             </button>
           ))}
         </div>

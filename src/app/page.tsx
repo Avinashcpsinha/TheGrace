@@ -17,8 +17,8 @@ export default async function HomePage() {
       return [
         c.slug,
         p
-          ? { src: p.images[0].thumb, blur: p.images[0].blur }
-          : { src: "/images/site/hero-trophy.webp", blur: "" },
+          ? { src: p.images[0].thumb, blur: p.images[0].blur, dominant: p.images[0].dominant }
+          : { src: "/images/site/hero-trophy.webp", blur: "", dominant: "#12121a" },
       ];
     })
   );
