@@ -9,6 +9,21 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["framer-motion", "gsap"],
   },
+  /**
+   * Both apex and www resolve to this deployment, so www is folded into the
+   * apex — the canonical host used by site.url, the sitemap and every OG tag.
+   * Without this the two hosts serve identical pages as duplicate content.
+   */
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.the-grace.com" }],
+        destination: "https://the-grace.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

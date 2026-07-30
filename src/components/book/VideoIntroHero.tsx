@@ -21,16 +21,15 @@
  *  • "Skip intro" jumps straight to the open spread.
  *  • prefers-reduced-motion → the open spread + links are shown at once,
  *    no playback.
- *  • Emits emitBookProgress(1) when the book opens so the glass Header
- *    reveals itself (it listens for tg:book-progress).
+ *  • The glass Header sits permanently on top of this section, so the intro
+ *    carries no logo or theme switcher of its own and the skip button is
+ *    offset below var(--header-h).
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useReducedMotion } from "framer-motion";
-import { emitBookProgress } from "@/lib/events";
-import { ThemeSwitcher } from "@/components/chrome/ThemeSwitcher";
 
 interface IntroPage {
   title: string;
@@ -46,14 +45,23 @@ interface VideoIntroHeroProps {
   rightPage: IntroPage;
 }
 
-/* The book finishes opening ~7.4s into the 10s clip; reveal the clickable
-   pages then rather than making the visitor wait out the closing hold. */
-const OPEN_AT = 7.4;
+/* The book finishes opening ~7s into the 10s clip, so playback stops there
+   rather than running out the closing hold.
+
+   This MUST stay in step with the frame held in posterOpen — that still is
+   grabbed at exactly this timestamp. The video is paused and seeked to it as
+   the still fades in, so the crossfade is still-over-identical-still and no
+   transition is visible. Change one and you must regrab the other. */
+const OPEN_AT = 7.0;
 
 /* Hotspot rectangles as % of the 1280×720 frame, tracing the left
    ("Premium") and right ("General") pages of the open spread. */
-const LEFT_HOTSPOT = { left: "8%", top: "8%", width: "41%", height: "77%" };
-const RIGHT_HOTSPOT = { left: "51%", top: "8%", width: "41%", height: "77%" };
+/* Measured off the freeze frame — the t=7s frame of Grace-Video8k.mp4, held
+   in public/images/site/intro-open.webp. The left page spans 9–49% of the
+   16:9 stage, the right 50–90%, both 7–91% vertically. Re-measure these if
+   the intro film is ever re-cut or a different frame is grabbed. */
+const LEFT_HOTSPOT = { left: "9%", top: "7%", width: "40%", height: "84%" };
+const RIGHT_HOTSPOT = { left: "50%", top: "7%", width: "40%", height: "84%" };
 
 export function VideoIntroHero({
   videoSrc,
@@ -75,23 +83,6 @@ export function VideoIntroHero({
     setOpened(true);
   }, []);
 
-  /* Keep the header out of the full-screen intro so the book is never
-     covered; reveal it only once the visitor scrolls down toward the
-     storefront. (The header listens for tg:book-progress: 1 = show.) */
-  useEffect(() => {
-    let shown = false;
-    const onScroll = () => {
-      const next = window.scrollY > window.innerHeight * 0.6;
-      if (next !== shown) {
-        shown = next;
-        emitBookProgress(next ? 1 : 0);
-      }
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   /* reduced motion: skip straight to the interactive open spread */
   useEffect(() => {
     if (reduce) open();
@@ -105,20 +96,31 @@ export function VideoIntroHero({
     });
   }, [reduce]);
 
+  /* Park the film on exactly the frame the still was grabbed from. timeupdate
+     only fires ~4x/sec, so it can overshoot by a few frames — seeking back to
+     OPEN_AT removes the drift, and the sparkles behind the book are moving
+     enough that a few frames would otherwise register as a jump. */
+  const freezeAtOpenFrame = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.pause();
+    try {
+      v.currentTime = OPEN_AT;
+    } catch {
+      /* not seekable yet — the still fades in over it regardless */
+    }
+  }, []);
+
   const onTimeUpdate = () => {
-    if (!opened && (videoRef.current?.currentTime ?? 0) >= OPEN_AT) open();
+    if (opened) return;
+    if ((videoRef.current?.currentTime ?? 0) >= OPEN_AT) {
+      freezeAtOpenFrame();
+      open();
+    }
   };
 
   const skip = () => {
-    const v = videoRef.current;
-    if (v) {
-      v.pause();
-      try {
-        v.currentTime = Math.max(0, (v.duration || OPEN_AT) - 0.05);
-      } catch {
-        /* duration not ready yet — the poster overlay covers it */
-      }
-    }
+    freezeAtOpenFrame();
     open();
   };
 
@@ -134,7 +136,12 @@ export function VideoIntroHero({
   return (
     <section
       aria-label="The Grace — opening"
-      className="relative h-[100svh] w-full overflow-hidden bg-ink"
+      /* Sticky, not relative: the intro pins to the viewport while the
+         storefront below scrolls up and over it (see #after-book in
+         app/page.tsx, which sits at z-10 on an opaque background). Sticky
+         still establishes a containing block, so .tg-intro-stage and the
+         other absolutely-positioned overlays are unaffected. */
+      className="sticky top-0 z-0 h-[100svh] w-full overflow-hidden bg-ink"
     >
       {/* full-bleed stage: covers the viewport on desktop, fits (letterboxes)
           on portrait phones — see .tg-intro-stage in globals.css. The video,
@@ -152,7 +159,9 @@ export function VideoIntroHero({
           autoPlay={!reduce}
           preload="auto"
           onTimeUpdate={onTimeUpdate}
-          onEnded={open}
+          /* safety net: if timeupdate never fires, still park on the open
+             frame rather than leaving the closing hold under the still */
+          onEnded={skip}
         />
 
         {/* crisp freeze of the open spread, faded in once the book is open */}
@@ -174,18 +183,10 @@ export function VideoIntroHero({
 
       {/* ─── viewport-anchored overlays (independent of the cropped stage) ─── */}
 
-      {/* mood switcher — reachable during the intro, before the header appears */}
-      <ThemeSwitcher className="absolute right-4 top-4 z-30" />
-
-      {/* brand mark — the header is hidden during the intro, so this carries the logo */}
-      <Image
-        src="/Logo.png"
-        alt="The Grace"
-        width={255}
-        height={138}
-        priority
-        className="absolute left-1/2 top-5 z-20 h-12 w-auto -translate-x-1/2 opacity-95 drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)] sm:h-14"
-      />
+      {/* No logo or theme switcher here any more: the glass header is now
+          permanently on top of the intro and already carries the crest and
+          the centred wordmark, so both were duplicated — and anything above
+          y=var(--header-h) would sit underneath it (header is z-50). */}
 
       {/* in-video controls (while playing) */}
       {!opened && (
@@ -193,7 +194,8 @@ export function VideoIntroHero({
           <button
             type="button"
             onClick={skip}
-            className="absolute right-4 top-16 z-30 rounded-full border border-white/15 bg-black/40 px-4 py-1.5 text-xs font-medium tracking-[0.18em] text-ivory/90 backdrop-blur-md transition-colors hover:border-gold/40 hover:text-champagne"
+            /* clear of the fixed header, which now overlays the intro */
+            className="absolute right-4 top-[calc(var(--header-h)+0.75rem)] z-30 rounded-full border border-white/15 bg-black/40 px-4 py-1.5 text-xs font-medium tracking-[0.18em] text-ivory/90 backdrop-blur-md transition-colors hover:border-gold/40 hover:text-champagne"
           >
             SKIP INTRO →
           </button>

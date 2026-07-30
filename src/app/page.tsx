@@ -41,7 +41,13 @@ export default async function HomePage() {
         }}
       />
 
-      <div id="after-book" className="relative z-10 bg-ink">
+      {/* Rides up over the pinned intro (which is sticky at z-0). The opaque
+          background is what actually covers the film; the shadow gives the
+          leading edge some lift so the overlap reads as a layer, not a cut. */}
+      <div
+        id="after-book"
+        className="relative z-10 bg-ink shadow-[0_-48px_90px_-24px_rgba(0,0,0,0.95)]"
+      >
         {/* the six collections lead the page — the first thing after the book
             opens is where the customer chooses what they came for */}
         <CategoryShowcase categories={categories} covers={covers} />

@@ -1,18 +1,19 @@
 "use client";
 
 /**
- * Site header — fixed glassmorphic chrome (h-[var(--header-h)], z-50).
+ * Site header — fixed transparent chrome (h-[var(--header-h)], z-50).
+ * See .header-chrome in globals.css: no background, so the hero video and
+ * page art run clean underneath.
  *
- * Home ("/") choreography: hidden (translateY(-110%), opacity 0) until the
- * book hero opens. Listens for EV_BOOK_PROGRESS and reveals with a 0.6s
- * var(--ease-lux) slide once progress >= 0.98; once shown it only re-hides
- * when the user scrolls the book fully closed again (progress < 0.9).
- * Fallback for mid-page reloads / reduced motion (no GSAP timeline):
- * reveals when scrollY > 2 viewports. Every other route: always visible.
+ * Always visible, on every route including the home video intro. It used to
+ * hide itself on "/" until the intro reported EV_BOOK_PROGRESS >= 0.98 so the
+ * film played uninterrupted; the brand now wants the nav present over the
+ * hero, so the choreography is gone and the glass simply sits on top. The
+ * intro's own duplicate logo and theme switcher were removed to match.
  *
  * The mobile menu and SearchOverlay are rendered as siblings of <header>
- * (not children) because the header's reveal transform would otherwise
- * become the containing block for their fixed positioning.
+ * (not children) so the header never becomes the containing block for their
+ * fixed positioning.
  */
 
 import Image from "next/image";
@@ -21,7 +22,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useStore } from "@/lib/store";
-import { EV_BOOK_PROGRESS } from "@/lib/events";
 import categoriesJson from "@/data/categories.json";
 import { SearchOverlay } from "./SearchOverlay";
 import { ThemeSwitcher } from "./ThemeSwitcher";
@@ -36,17 +36,35 @@ const CATEGORIES: CategoryLite[] = categoriesJson;
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-const PRIMARY_LINKS = [
-  { href: "/premium", label: "Premium" },
-  { href: "/standard", label: "Standard" },
-  { href: "/products", label: "All Products" },
-  { href: "/customization", label: "Customization" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+/**
+ * Primary navigation, split either side of the centred wordmark (3 | 4),
+ * mirroring the reference layout. Order is the customer's.
+ */
+const LEFT_LINKS = [
+  { href: "/journal", label: "Journal" },
+  { href: "/customization", label: "Customized Designs" },
+  { href: "/category/gifting", label: "Corporate" },
 ] as const;
 
-const ICON_BTN =
-  "relative grid h-10 w-10 place-items-center rounded-full text-muted transition-colors duration-300 hover:bg-white/5 hover:text-champagne cursor-pointer";
+const RIGHT_LINKS = [
+  { href: "/craft-your-design", label: "Craft Your Design" },
+  { href: "/testimonials", label: "Client Testimonies" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/contact", label: "Get In Touch" },
+] as const;
+
+/** Flat list for the mobile menu. */
+const PRIMARY_LINKS = [...LEFT_LINKS, ...RIGHT_LINKS] as const;
+
+/**
+ * Display is deliberately NOT baked in here: `hidden` and `grid` are both
+ * display utilities of equal specificity, so appending `hidden` to a class
+ * string already containing `grid` does nothing. Callers add their own.
+ */
+const ICON_BTN_BASE =
+  "relative h-10 w-10 place-items-center rounded-full text-muted transition-colors duration-300 hover:bg-white/5 hover:text-champagne cursor-pointer";
+
+const ICON_BTN = `grid ${ICON_BTN_BASE}`;
 
 function trapTab(e: KeyboardEvent, container: HTMLElement) {
   const nodes = container.querySelectorAll<HTMLElement>(
@@ -69,45 +87,38 @@ function trapTab(e: KeyboardEvent, container: HTMLElement) {
 
 export function Header() {
   const pathname = usePathname();
-  const isHome = pathname === "/";
-  const [revealed, setRevealed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { totals, wishlist, hydrated } = useStore();
   const reduce = useReducedMotion() ?? false;
   const menuRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
-  const gotProgress = useRef(false);
 
-  const visible = !isHome || revealed;
   const itemCount = totals.itemCount;
   const wishCount = wishlist.length;
 
-  /* home: reveal once the book opens (with hysteresis), scroll fallback */
+  /* Past the first few pixels the transparent chrome takes on a frosted
+     backing (see .header-chrome[data-scrolled] in globals.css) so the nav
+     stays readable once page content is running underneath it. Reads are
+     batched into a rAF and the state only flips on a change, so the
+     listener costs nothing while scrolling. */
   useEffect(() => {
-    if (!isHome) return;
-    gotProgress.current = false;
-    if (window.scrollY > window.innerHeight * 2) setRevealed(true);
-
-    const onProgress = (e: Event) => {
-      const p = (e as CustomEvent<{ progress: number }>).detail?.progress;
-      if (typeof p !== "number") return;
-      gotProgress.current = true;
-      setRevealed((shown) => (shown ? p >= 0.9 : p >= 0.98));
+    let frame = 0;
+    const read = () => {
+      frame = 0;
+      setScrolled(window.scrollY > 32);
     };
     const onScroll = () => {
-      // fallback only — once the book reports progress, it owns visibility
-      if (!gotProgress.current && window.scrollY > window.innerHeight * 2) {
-        setRevealed(true);
-      }
+      if (!frame) frame = window.requestAnimationFrame(read);
     };
-    window.addEventListener(EV_BOOK_PROGRESS, onProgress);
+    read();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      window.removeEventListener(EV_BOOK_PROGRESS, onProgress);
+      if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [isHome]);
+  }, []);
 
   /* Ctrl / Cmd + K opens search */
   useEffect(() => {
@@ -149,7 +160,6 @@ export function Header() {
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
-  const productsActive = pathname === "/products" || pathname.startsWith("/category/");
 
   const menuItem = {
     hidden: { opacity: 0, y: reduce ? 0 : 22 },
@@ -163,91 +173,62 @@ export function Header() {
   return (
     <>
       <header
-        inert={!visible}
-        className={`glass fixed inset-x-0 top-0 z-50 h-[var(--header-h)] transition-[transform,opacity] duration-[600ms] ease-[var(--ease-lux)] motion-reduce:transition-none ${
-          visible
-            ? "translate-y-0 opacity-100"
-            : "pointer-events-none -translate-y-[110%] opacity-0"
-        }`}
+        data-scrolled={scrolled}
+        className="header-chrome fixed inset-x-0 top-0 z-50 h-[var(--header-h)]"
       >
         <style>{`@keyframes badge-pop{0%{transform:scale(.4)}55%{transform:scale(1.3)}100%{transform:scale(1)}}`}</style>
-        <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-6">
-          {/* wordmark */}
-          <Link href="/" aria-label="The Grace — home" className="flex shrink-0 items-center">
-            <Image
-              src="/Logo.png"
-              alt="The Grace"
-              width={255}
-              height={138}
-              priority
-              className="h-9 w-auto"
-            />
+        {/*
+          Left cluster | wordmark | right cluster. Both clusters are
+          flex-1 basis-0, so they claim equal width and the wordmark lands on
+          the true midline. That only holds while each cluster fits inside its
+          half — which is why the theme switcher lives in the footer, not here:
+          with it, the right cluster overflowed and shouldered the wordmark
+          off-centre (and then straight over "Craft Your Design").
+        */}
+        <div className="mx-auto flex h-full max-w-[1560px] items-center gap-2 px-4 sm:gap-4 sm:px-5 2xl:px-8">
+          {/* left — crest + first three links */}
+          <div className="flex flex-1 basis-0 items-center gap-4">
+            <Link href="/" aria-label="The Grace — home" className="flex shrink-0 items-center">
+              <Image
+                src="/Logo.png"
+                alt="The Grace"
+                width={255}
+                height={138}
+                priority
+                className="h-9 w-auto"
+              />
+            </Link>
+            <nav aria-label="Primary" className="hidden items-center 2xl:flex">
+              {LEFT_LINKS.map((l) => (
+                <NavLink key={l.href} href={l.href} label={l.label} active={isActive(l.href)} />
+              ))}
+            </nav>
+          </div>
+
+          {/* centre — the footer wordmark, scaled to the header */}
+          <Link
+            href="/"
+            aria-label="The Grace — home"
+            className="flex shrink-0 flex-col items-center leading-none"
+          >
+            <span className="gold-text font-display text-sm font-semibold tracking-[0.18em] sm:text-base sm:tracking-[0.28em] lg:text-lg">
+              THE GRACE
+            </span>
+            <span className="mt-1 hidden text-[0.5rem] font-medium tracking-[0.42em] text-muted sm:block">
+              AWARDS · NEW DELHI
+            </span>
           </Link>
 
-          {/* desktop nav */}
-          <nav aria-label="Primary" className="hidden items-center lg:flex">
-            <NavLink href="/premium" label="Premium" active={isActive("/premium")} />
-            <NavLink href="/standard" label="Standard" active={isActive("/standard")} />
+          {/* right — last four links + actions */}
+          <div className="flex flex-1 basis-0 items-center justify-end gap-3">
+            <nav aria-label="Secondary" className="hidden items-center 2xl:flex">
+              {RIGHT_LINKS.map((l) => (
+                <NavLink key={l.href} href={l.href} label={l.label} active={isActive(l.href)} />
+              ))}
+            </nav>
 
-            {/* All Products + categories dropdown */}
-            <div className="group relative">
-              <Link
-                href="/products"
-                aria-haspopup="true"
-                aria-current={productsActive ? "page" : undefined}
-                className={`relative flex items-center gap-1.5 px-3 py-2 text-sm tracking-wide transition-colors duration-300 ${
-                  productsActive ? "text-champagne" : "text-muted hover:text-ivory"
-                }`}
-              >
-                All Products
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  className="h-3 w-3 transition-transform duration-300 ease-[var(--ease-lux)] group-hover:rotate-180 motion-reduce:transition-none"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-                <Underline active={productsActive} />
-              </Link>
-              <div className="invisible absolute left-1/2 top-full -translate-x-1/2 pt-3 opacity-0 transition-[opacity,visibility] duration-300 ease-[var(--ease-lux)] group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100 motion-reduce:transition-none">
-                <div className="w-72 rounded-2xl border border-gold/15 bg-ink-2/95 p-2 shadow-[var(--shadow-card)] backdrop-blur-xl">
-                  {CATEGORIES.map((c) => (
-                    <Link
-                      key={c.slug}
-                      href={`/category/${c.slug}`}
-                      className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-muted transition-colors duration-200 hover:bg-white/5 hover:text-ivory focus-visible:bg-white/5 focus-visible:text-ivory"
-                    >
-                      <span>{c.name}</span>
-                      <span className="shrink-0 text-[10px] uppercase tracking-[0.18em] text-muted/70">
-                        {c.count > 0 ? c.count : "made to order"}
-                      </span>
-                    </Link>
-                  ))}
-                  <div className="gold-rule my-2" aria-hidden="true" />
-                  <Link
-                    href="/products"
-                    className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-champagne transition-colors duration-200 hover:bg-gold/10"
-                  >
-                    Browse all products
-                    <span aria-hidden="true">→</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <NavLink href="/customization" label="Customization" active={isActive("/customization")} />
-            <NavLink href="/about" label="About" active={isActive("/about")} />
-            <NavLink href="/contact" label="Contact" active={isActive("/contact")} />
-          </nav>
-
-          {/* actions */}
-          <div className="flex items-center gap-1">
-            <ThemeSwitcher className="mr-1.5 hidden sm:flex" />
+            {/* actions */}
+            <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
@@ -272,7 +253,8 @@ export function Header() {
             <Link
               href="/wishlist"
               aria-label={`Wishlist — ${wishCount} ${wishCount === 1 ? "item" : "items"} saved`}
-              className={ICON_BTN}
+              /* below sm the wordmark needs the room; wishlist stays in the menu */
+              className={`hidden sm:grid ${ICON_BTN_BASE}`}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -333,7 +315,7 @@ export function Header() {
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
               aria-label="Open menu"
-              className={`${ICON_BTN} lg:hidden`}
+              className={`${ICON_BTN} 2xl:hidden`}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -349,6 +331,7 @@ export function Header() {
                 <path d="M7 17h13" />
               </svg>
             </button>
+            </div>
           </div>
         </div>
       </header>
@@ -368,7 +351,7 @@ export function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: reduce ? 0 : 0.4, ease: EASE }}
-            className="fixed inset-0 z-[70] flex flex-col overflow-y-auto bg-ink/90 backdrop-blur-2xl lg:hidden"
+            className="fixed inset-0 z-[70] flex flex-col overflow-y-auto bg-ink/90 backdrop-blur-2xl 2xl:hidden"
             onClick={(e) => {
               if (e.target === e.currentTarget) setMenuOpen(false);
             }}
@@ -420,7 +403,7 @@ export function Header() {
               className="flex flex-1 flex-col justify-center px-8 pb-12"
             >
               {PRIMARY_LINKS.map((n) => {
-                const active = n.href === "/products" ? productsActive : isActive(n.href);
+                const active = isActive(n.href);
                 return (
                   <motion.div key={n.href} variants={menuItem}>
                     <Link
@@ -502,7 +485,7 @@ function NavLink({ href, label, active }: { href: string; label: string; active:
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`relative px-3 py-2 text-sm tracking-wide transition-colors duration-300 ${
+      className={`relative whitespace-nowrap px-2.5 py-2 text-[11px] uppercase tracking-[0.14em] transition-colors duration-300 ${
         active ? "text-champagne" : "text-muted hover:text-ivory"
       }`}
     >
@@ -516,7 +499,7 @@ function Underline({ active }: { active: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`absolute inset-x-3 bottom-0.5 h-px bg-[linear-gradient(90deg,transparent,var(--color-gold),transparent)] transition-opacity duration-300 ${
+      className={`absolute inset-x-2.5 bottom-0.5 h-px bg-[linear-gradient(90deg,transparent,var(--color-gold),transparent)] transition-opacity duration-300 ${
         active ? "opacity-100" : "opacity-0"
       }`}
     />

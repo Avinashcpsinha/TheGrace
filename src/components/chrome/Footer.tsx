@@ -7,6 +7,7 @@
 import Link from "next/link";
 import { site } from "@/config/site";
 import { getCategories } from "@/lib/catalog";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 /** +917009112154 → +91 70091 12154 */
 function prettyPhone(phone: string): string {
@@ -16,12 +17,16 @@ function prettyPhone(phone: string): string {
 
 const SUPPORT_LINKS = [
   { href: "/products", label: "All Products" },
-  { href: "/customization", label: "Customization" },
+  { href: "/customization", label: "Customized Designs" },
+  { href: "/craft-your-design", label: "Craft Your Design" },
+  { href: "/journal", label: "Journal" },
+  { href: "/testimonials", label: "Client Testimonies" },
+  { href: "/faq", label: "FAQ" },
   { href: "/track-order", label: "Track Order" },
   { href: "/cart", label: "Cart" },
   { href: "/wishlist", label: "Wishlist" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/contact", label: "Get In Touch" },
 ] as const;
 
 const linkCls =
@@ -180,6 +185,11 @@ export function Footer() {
           <p>
             © {year} {site.name} · Crafted with pride in Delhi
           </p>
+          {/* lives here rather than the header — the seven-link nav needs the room */}
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-muted/70">Theme</span>
+            <ThemeSwitcher />
+          </div>
           <ul aria-label="Accepted payment methods" className="flex items-center gap-2">
             {["UPI", "Cards", "NetBanking", "COD"].map((m) => (
               <li
