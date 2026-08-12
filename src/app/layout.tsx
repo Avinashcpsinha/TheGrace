@@ -6,7 +6,6 @@ import { StoreProvider } from "@/lib/store";
 import { SmoothScroll } from "@/components/chrome/SmoothScroll";
 import { Header } from "@/components/chrome/Header";
 import { Footer } from "@/components/chrome/Footer";
-import { OrderFab } from "@/components/chrome/OrderFab";
 import { CursorGlow } from "@/components/chrome/CursorGlow";
 import { Toaster } from "@/components/chrome/Toaster";
 
@@ -101,7 +100,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <main id="main">{children}</main>
           <Footer />
-          <OrderFab />
           <Toaster />
         </StoreProvider>
         <div className="grain" aria-hidden="true" />
