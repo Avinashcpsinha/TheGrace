@@ -5,12 +5,19 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Testimonials } from "@/components/home/Testimonials";
 import { CraftCounters } from "@/components/home/CraftCounters";
+import { TestimonialForm } from "@/components/testimonials/TestimonialForm";
 import { Button } from "@/components/ui/Button";
 
+/**
+ * Two halves: what clients have said (the carousel and the sectors), and the
+ * desk where a client adds theirs. #write is a real anchor — the hero and the
+ * closing CTA both point at it.
+ */
+
 export const metadata: Metadata = {
-  title: "Client Testimonies — Who We Make Awards For",
+  title: "Client Testimonies — Read Them, or Write One",
   description:
-    "Corporates, schools, sports bodies and event planners across India trust The Grace with their podium. Read what clients say about our trophies, medals and corporate gifting.",
+    "Corporates, schools, sports bodies and event planners across India trust The Grace with their podium. Read what clients say about our trophies, medals and corporate gifting — and add your own.",
   alternates: { canonical: "/testimonials" },
 };
 
@@ -57,6 +64,11 @@ export default function TestimonialsPage() {
               opened and the ceremony is over.
             </p>
             <div className="gold-rule mt-1 w-28" aria-hidden="true" />
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+              <Button href="#write" variant="outline" size="sm">
+                Write a testimonial
+              </Button>
+            </div>
           </Reveal>
         </div>
       </section>
@@ -84,8 +96,24 @@ export default function TestimonialsPage() {
       {/* the numbers */}
       <CraftCounters />
 
+      {/* write one */}
+      <section
+        id="write"
+        aria-label="Write a testimonial"
+        className="scroll-mt-[calc(var(--header-h)+2rem)] mx-auto max-w-3xl px-6 pb-8 pt-8"
+      >
+        <SectionHeading
+          eyebrow="Your turn"
+          title="Write a testimonial"
+          sub="If we made something for your ceremony, we would like to hear how it landed — the good and the improvable."
+        />
+        <Reveal delay={120} className="mt-12">
+          <TestimonialForm />
+        </Reveal>
+      </section>
+
       {/* cta */}
-      <section aria-label="Start your commission" className="mx-auto max-w-3xl px-6 pb-24">
+      <section aria-label="Start your commission" className="mx-auto max-w-3xl px-6 py-24">
         <Reveal className="card-surface rounded-2xl p-8 text-center">
           <h2 className="font-display text-2xl text-ivory">Add your ceremony to the list</h2>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-muted">

@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { site } from "@/config/site";
 import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
-import { ENTRIES, getEntry, getEntries, formatDate } from "@/lib/journal";
+import { ENTRIES, getEntry, getEntries, formatDate, sectionLabel } from "@/lib/journal";
 
 export function generateStaticParams() {
   return ENTRIES.map((e) => ({ slug: e.slug }));
@@ -84,11 +84,13 @@ export default async function JournalEntryPage({
           </div>
           <div className="relative z-10 mx-auto max-w-3xl px-6 pb-16 pt-[calc(var(--header-h)+5rem)] text-center">
             <Reveal className="flex flex-col items-center gap-5">
+              {/* back to the section this entry belongs to, not the whole
+                  index — a reader who arrived from News wants News */}
               <Link
-                href="/journal"
+                href={`/journal?section=${entry.section}`}
                 className="text-[0.65rem] uppercase tracking-[0.3em] text-gold/90 transition-colors duration-300 hover:text-champagne"
               >
-                ← The Journal
+                ← {sectionLabel(entry.section)}
               </Link>
               <h1 className="font-display text-4xl leading-[1.08] text-ivory [text-wrap:balance] md:text-5xl lg:text-6xl">
                 {entry.title}

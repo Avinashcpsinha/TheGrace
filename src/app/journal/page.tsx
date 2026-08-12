@@ -4,17 +4,43 @@ import Link from "next/link";
 import { HERO } from "@/lib/hero-images";
 import { HeroBackdrop } from "@/components/catalog/HeroBackdrop";
 import { Reveal } from "@/components/ui/Reveal";
-import { getEntries, formatDate } from "@/lib/journal";
+import {
+  SECTIONS,
+  getEntries,
+  formatDate,
+  parseSection,
+  sectionCounts,
+  sectionLabel,
+} from "@/lib/journal";
 
-export const metadata: Metadata = {
-  title: "Journal — Notes from the Workshop",
-  description:
-    "Notes on craft, materials and commissions from The Grace — a premium trophy and awards workshop in Lajpat Nagar, New Delhi.",
-  alternates: { canonical: "/journal" },
-};
+/**
+ * The Journal carries four kinds of writing — Launch, News, New Products and
+ * Blog — filtered by ?section=. The chips are plain links and the filtering
+ * happens on the server, so the page needs no client JavaScript and each
+ * section is a shareable, indexable URL.
+ */
 
-export default function JournalPage() {
-  const entries = getEntries();
+interface PageProps {
+  searchParams: Promise<{ section?: string }>;
+}
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const section = parseSection((await searchParams).section);
+  const meta = section ? SECTIONS.find((s) => s.key === section)! : undefined;
+
+  return {
+    title: meta ? `${meta.label} — The Journal` : "Journal — Launches, News & Notes",
+    description:
+      meta?.blurb ??
+      "Launches, workshop news, new product information and longer notes on craft from The Grace — a premium trophy and awards workshop in Lajpat Nagar, New Delhi.",
+    alternates: { canonical: section ? `/journal?section=${section}` : "/journal" },
+  };
+}
+
+export default async function JournalPage({ searchParams }: PageProps) {
+  const section = parseSection((await searchParams).section);
+  const entries = getEntries(section);
+  const counts = sectionCounts();
   const [lead, ...rest] = entries;
 
   return (
@@ -35,8 +61,9 @@ export default function JournalPage() {
               </span>
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-muted md:text-lg">
-              Notes on craft, materials and the commissions that taught us something worth
-              writing down.
+              {section
+                ? SECTIONS.find((s) => s.key === section)!.blurb
+                : "Launches, workshop news, what has just joined the catalogue, and the commissions that taught us something worth writing down."}
             </p>
             <div className="gold-rule mt-1 w-28" aria-hidden="true" />
           </Reveal>
@@ -44,6 +71,40 @@ export default function JournalPage() {
       </section>
 
       <div className="mx-auto max-w-7xl px-6 pb-24 pt-6">
+        {/* section chips */}
+        <Reveal>
+          <nav
+            aria-label="Journal sections"
+            className="flex flex-wrap items-center justify-center gap-2 pb-10"
+          >
+            <SectionChip href="/journal" label="Everything" count={null} active={!section} />
+            {SECTIONS.map((s) => (
+              <SectionChip
+                key={s.key}
+                href={`/journal?section=${s.key}`}
+                label={s.label}
+                count={counts[s.key]}
+                active={section === s.key}
+              />
+            ))}
+          </nav>
+        </Reveal>
+
+        {/* empty section */}
+        {entries.length === 0 && (
+          <Reveal className="card-surface mx-auto max-w-xl rounded-2xl p-10 text-center">
+            <h2 className="font-display text-2xl text-ivory">Nothing filed here yet</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted">
+              This section is waiting on its first entry. In the meantime, the rest of the
+              Journal is{" "}
+              <Link href="/journal" className="text-champagne hover:underline">
+                over here
+              </Link>
+              .
+            </p>
+          </Reveal>
+        )}
+
         {/* lead entry */}
         {lead && (
           <Reveal>
@@ -63,7 +124,7 @@ export default function JournalPage() {
               </div>
               <div className="flex flex-col justify-center gap-4 p-8 md:p-10">
                 <p className="text-[0.65rem] uppercase tracking-[0.3em] text-gold/90">
-                  Latest
+                  {section ? "Latest" : `Latest · ${sectionLabel(lead.section)}`}
                 </p>
                 <h2 className="font-display text-3xl leading-tight text-ivory transition-colors duration-300 group-hover:text-champagne md:text-4xl">
                   {lead.title}
@@ -98,6 +159,11 @@ export default function JournalPage() {
                     />
                   </div>
                   <div className="flex flex-1 flex-col gap-3 p-7">
+                    {!section && (
+                      <p className="text-[0.6rem] uppercase tracking-[0.3em] text-gold/80">
+                        {sectionLabel(e.section)}
+                      </p>
+                    )}
                     <h2 className="font-display text-2xl leading-tight text-ivory transition-colors duration-300 group-hover:text-champagne">
                       {e.title}
                     </h2>
@@ -115,5 +181,36 @@ export default function JournalPage() {
         )}
       </div>
     </>
+  );
+}
+
+function SectionChip({
+  href,
+  label,
+  count,
+  active,
+}: {
+  href: string;
+  label: string;
+  count: number | null;
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`rounded-full border px-4 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] transition-colors duration-300 ${
+        active
+          ? "border-gold/60 bg-gold/10 text-champagne"
+          : "border-line text-muted hover:border-gold/40 hover:text-ivory"
+      }`}
+    >
+      {label}
+      {count !== null && (
+        <span className="ml-2 text-[0.6rem] font-normal tracking-normal text-muted/60">
+          {count}
+        </span>
+      )}
+    </Link>
   );
 }

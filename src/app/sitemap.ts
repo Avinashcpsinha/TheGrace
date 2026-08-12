@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllProducts, getCategories } from "@/lib/catalog";
-import { getEntries } from "@/lib/journal";
+import { SECTIONS, getEntries } from "@/lib/journal";
 import { site } from "@/config/site";
 
 /** Full sitemap: static marketing/commerce pages, every category and all
@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/premium", priority: 0.9, changeFrequency: "weekly" },
     { path: "/standard", priority: 0.9, changeFrequency: "weekly" },
     { path: "/products", priority: 0.9, changeFrequency: "weekly" },
+    { path: "/corporate", priority: 0.8, changeFrequency: "monthly" },
     { path: "/customization", priority: 0.8, changeFrequency: "monthly" },
     { path: "/craft-your-design", priority: 0.8, changeFrequency: "monthly" },
     { path: "/journal", priority: 0.7, changeFrequency: "weekly" },
@@ -39,6 +40,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  /* each Journal section is its own indexable listing */
+  const journalSections: MetadataRoute.Sitemap = SECTIONS.map((s) => ({
+    url: `${base}/journal?section=${s.key}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.6,
+  }));
+
   const journalEntries: MetadataRoute.Sitemap = getEntries().map((e) => ({
     url: `${base}/journal/${e.slug}`,
     lastModified: new Date(`${e.date}T00:00:00Z`),
@@ -54,5 +63,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticEntries, ...categoryEntries, ...journalEntries, ...productEntries];
+  return [
+    ...staticEntries,
+    ...categoryEntries,
+    ...journalSections,
+    ...journalEntries,
+    ...productEntries,
+  ];
 }

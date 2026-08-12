@@ -7,9 +7,9 @@ import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
-  title: "FAQ — Orders, Engraving, Delivery",
+  title: "FAQ — Orders, Customization, Engraving, Delivery",
   description:
-    "Answers on minimum order quantity, lead times, free engraving, design proofs, bulk discounts, GST invoices, delivery across India and payment options at The Grace, New Delhi.",
+    "Every answer in one place: minimum order quantity, lead times and rush orders, free engraving, design proofs, materials, custom moulds, bulk discounts, purchase orders and GST invoices, PAN India delivery, repairs and re-engraving — from The Grace, New Delhi.",
   alternates: { canonical: "/faq" },
 };
 
@@ -21,7 +21,12 @@ interface Faq {
 /**
  * Grouped so the page scans as sections rather than one long list. Answers
  * are the same ones the workshop gives on WhatsApp every day — lead time,
- * engraving, proofs, bulk tiers, invoicing and delivery.
+ * engraving, proofs, bulk tiers, invoicing, delivery, corporate paperwork and
+ * what happens when something goes wrong.
+ *
+ * Every question here is also emitted as FAQPage structured data, so keep
+ * answers self-contained: they can be shown by a search engine with no page
+ * around them.
  */
 const GROUPS: { heading: string; items: Faq[] }[] = [
   {
@@ -39,6 +44,43 @@ const GROUPS: { heading: string; items: Faq[] }[] = [
         q: "Can I see the design before you make it?",
         a: "Always. We send a design proof on WhatsApp and nothing enters production until you have approved it. Proofs are free and we will revise them until the piece reads the way you want.",
       },
+      {
+        q: "Can I order a sample before committing to the full run?",
+        a: "Yes, and for large or first-time corporate orders we recommend it. A single sample is charged at the unit price without the bulk discount; if you go ahead with the run, that difference comes off the final invoice.",
+      },
+      {
+        q: "Can I change or cancel after ordering?",
+        a: "Until the proof is approved, freely — nothing has been made. After approval it depends on the stage: quantities can usually still move up, engraving text cannot change once it is etched, and a cancelled run is charged for whatever has already been cast.",
+      },
+      {
+        q: "How do I track an order I have already placed?",
+        a: "Every order gets a reference beginning TG-. Enter it on the Track Order page for its current stage, or send it to us on WhatsApp and we will tell you exactly where it is on the bench.",
+      },
+    ],
+  },
+  {
+    heading: "Customization & design",
+    items: [
+      {
+        q: "What do you need from me to start a custom piece?",
+        a: "Three things: the occasion and its date, the quantity, and the words to be engraved. Artwork helps but is not essential — we can work from a logo file, a photograph, or a description of what you have in mind.",
+      },
+      {
+        q: "Can you work from our logo or a sketch?",
+        a: "Yes. Send a logo file, a photograph or even a rough sketch and our design team will translate it into a mould or an etch. Vector artwork (AI, EPS, SVG or PDF) reproduces most crisply, but we can redraw from a good image at no extra cost.",
+      },
+      {
+        q: "Can you design something entirely new, not from the catalogue?",
+        a: "That is most of what we do. A fully bespoke piece needs a new mould, which adds a one-off tooling cost and roughly a week to the timeline — both quoted up front, never discovered later.",
+      },
+      {
+        q: "How many revisions of the proof do I get?",
+        a: "As many as it takes. We would far rather revise a drawing five times than cast the wrong thing once. Proofs are free at every round.",
+      },
+      {
+        q: "Do you make corporate gifting and branded merchandise too?",
+        a: "Yes — gift boxes, hampers, welcome kits, drinkware, desk pieces, bags, apparel, keychains and lapel pins, all branded to your house style. The Corporate page carries both catalogues.",
+      },
     ],
   },
   {
@@ -49,12 +91,45 @@ const GROUPS: { heading: string; items: Faq[] }[] = [
         a: "Yes — free engraving is included on every award we make. Names, dates, citations and logos are laser-etched or cast as metal badges depending on the material.",
       },
       {
-        q: "Can you work from our logo or a sketch?",
-        a: "Yes. Send a logo file, a photograph or even a rough sketch and our design team will translate it into a mould or an etch. Vector artwork reproduces most crisply, but we can redraw from a good image.",
-      },
-      {
         q: "What materials do you work in?",
         a: "Optical crystal, die-cast metal, brass, acrylic, resin and seasoned hardwood — cast, cut, engraved and finished in our own Lajpat Nagar workshop rather than outsourced.",
+      },
+      {
+        q: "Crystal or metal — which should I choose?",
+        a: "Crystal suits corporate recognition and anything that will live on a desk: it takes a logo beautifully and engraves sub-surface, so it cannot scuff. Metal suits sport and anything that will be lifted, handed round or carried home, because it survives being dropped. If a piece is going on a podium, we will recommend metal.",
+      },
+      {
+        q: "What sizes do trophies come in?",
+        a: "Most designs run from roughly 6 to 22 inches, and podium sets are supplied in graduated heights for first, second and third. If you need a specific height to match an existing set, send us a photograph and a measurement.",
+      },
+      {
+        q: "Can we have custom ribbons on medals?",
+        a: "Yes. Custom-woven ribbons in your own colours and text need a minimum of fifty; below that we print onto stock ribbon, which costs less and is honestly hard to tell apart at arm's length.",
+      },
+      {
+        q: "Can you re-engrave a rolling shield we already own?",
+        a: "Yes, including shields we did not make. Send a photograph of the piece and the new name; if it is one of ours we will still have the artwork and the plate spacing on file.",
+      },
+    ],
+  },
+  {
+    heading: "Bulk & corporate",
+    items: [
+      {
+        q: "How do the bulk discounts work?",
+        a: "They apply automatically by quantity: 5% from ten pieces, 10% from twenty-five, 15% from fifty and 20% from a hundred. The tier is calculated per line, and it is already reflected in the price you see in the cart.",
+      },
+      {
+        q: "Can you raise a proforma invoice or work against a purchase order?",
+        a: `Yes to both — this is the normal route for corporate and institutional orders. Send your PO or ask for a proforma and we will raise it against the quoted amount. Write to ${site.email} or mention it on WhatsApp.`,
+      },
+      {
+        q: "Can you deliver to a venue rather than to our office?",
+        a: "Yes, and for conferences and offsites we would encourage it. Give us the venue, the date and a contact on site; we will time the dispatch so the boxes are not sitting in a store room for a week.",
+      },
+      {
+        q: "Can you match our brand guidelines exactly?",
+        a: "Send the guidelines and we will work to them — Pantone references, clear space, approved logo lock-ups. The proof shows you the result before anything is branded.",
       },
     ],
   },
@@ -64,6 +139,10 @@ const GROUPS: { heading: string; items: Faq[] }[] = [
       {
         q: "How long does an order take?",
         a: "Most commissions are cast, engraved, polished, packed and delivered within seven to ten days. Tell us your ceremony date when you enquire — if it is tighter than that, say so and we will tell you honestly whether we can meet it.",
+      },
+      {
+        q: "Can you do a rush order?",
+        a: "Sometimes. Stock pieces with simple engraving can move in two to three days; anything needing a new mould cannot be hurried without being spoiled. We will tell you which of those your order is before you commit, not after.",
       },
       {
         q: "Do you deliver outside Delhi?",
@@ -76,6 +155,27 @@ const GROUPS: { heading: string; items: Faq[] }[] = [
       {
         q: "What payment methods do you accept?",
         a: `Cash on delivery is available, and orders placed on WhatsApp can be settled directly with the workshop. For bulk and corporate orders we will raise a proforma invoice on request — write to ${site.email}.`,
+      },
+    ],
+  },
+  {
+    heading: "After the ceremony",
+    items: [
+      {
+        q: "Something arrived damaged. What now?",
+        a: "Photograph it as it came out of the box and send it to us the same day. Transit damage is our problem, not yours — we remake and re-dispatch, and if the ceremony is imminent we will tell you straight away whether we can make the date.",
+      },
+      {
+        q: "There is a mistake in the engraving.",
+        a: "If the approved proof was right and the piece is wrong, we remake it at our cost. If the proof itself carried the error, we will still remake it, at the cost of the materials only — but this is exactly why we ask for a third pair of eyes on the proof before approval.",
+      },
+      {
+        q: "Can you repair or re-polish an older trophy?",
+        a: "Usually, yes, including pieces from other makers. Bring it to the workshop or send a photograph and we will tell you honestly whether repair or replacement is the better use of your money.",
+      },
+      {
+        q: "Do you keep our artwork for repeat orders?",
+        a: "Yes. Moulds, dies and artwork are kept on file indefinitely, which is what lets a school reorder the same shield eight years later without sending anything but a name.",
       },
     ],
   },

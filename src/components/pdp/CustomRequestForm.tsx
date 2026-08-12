@@ -6,6 +6,11 @@
  * logo zone (image/PDF, 4 MB client-checked), aria-live status, and a
  * success state with the CR reference, a prefilled WhatsApp button and a
  * route back to the catalogue.
+ *
+ * The brief opens with a stream: Trophies & Awards, Corporate Gifting or
+ * Merchandise. It is the first question because it changes what the workshop
+ * needs to know — a ceremony date versus a headcount versus a size breakdown
+ * — and it narrows the product-type list to something readable.
  */
 
 import { useRef, useState, type DragEvent, type FormEvent } from "react";
@@ -13,8 +18,9 @@ import { Button } from "@/components/ui/Button";
 import { waLink } from "@/lib/order-links";
 import {
   MAX_LOGO_BYTES,
-  PRODUCT_TYPES,
+  STREAMS,
   type ProductType,
+  type StreamKey,
 } from "@/components/pdp/customization-constants";
 
 type FieldKey = "name" | "phone" | "email" | "quantity" | "logo";
@@ -41,6 +47,7 @@ export function CustomRequestForm() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [stream, setStream] = useState<StreamKey>("awards");
   const [productType, setProductType] = useState<ProductType>("Trophies");
   const [quantity, setQuantity] = useState("25");
   const [message, setMessage] = useState("");
@@ -52,6 +59,16 @@ export function CustomRequestForm() {
   const [refId, setRefId] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const activeStream = STREAMS.find((s) => s.key === stream)!;
+
+  /* Switching stream resets the detail to that stream's first type — leaving
+     "Drinkware" selected under Trophies & Awards would send the workshop a
+     brief that contradicts itself. */
+  const selectStream = (key: StreamKey) => {
+    setStream(key);
+    setProductType(STREAMS.find((s) => s.key === key)!.types[0]);
+  };
 
   const clearError = (key: FieldKey) =>
     setErrors((prev) => {
@@ -204,6 +221,46 @@ export function CustomRequestForm() {
       className="card-surface rounded-3xl p-6 md:p-10"
       aria-label="Customization request form"
     >
+      {/* stream — the first question, because it changes the rest */}
+      <fieldset className="mb-8">
+        <legend className={labelCls}>What are we making?</legend>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {STREAMS.map((s) => {
+            const active = s.key === stream;
+            return (
+              <label
+                key={s.key}
+                className={`flex cursor-pointer flex-col gap-2 rounded-2xl border p-4 transition-colors duration-300 has-[:focus-visible]:border-gold ${
+                  active
+                    ? "border-gold/60 bg-gold/[0.07]"
+                    : "border-line bg-ink-2 hover:border-gold/30"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="stream"
+                  value={s.key}
+                  checked={active}
+                  onChange={() => selectStream(s.key)}
+                  className="sr-only"
+                />
+                <span
+                  className={`font-display text-lg leading-tight ${
+                    active ? "text-champagne" : "text-ivory"
+                  }`}
+                >
+                  {s.label}
+                </span>
+                <span className="text-xs leading-relaxed text-muted">{s.blurb}</span>
+              </label>
+            );
+          })}
+        </div>
+        <p className="mt-3 text-xs text-muted/80">
+          <span className="text-gold">We&rsquo;ll need:</span> {activeStream.asks}
+        </p>
+      </fieldset>
+
       <div className="grid gap-6 sm:grid-cols-2">
         {/* name */}
         <div>
@@ -286,10 +343,10 @@ export function CustomRequestForm() {
           )}
         </div>
 
-        {/* product type */}
+        {/* product type — narrowed to the chosen stream, plus Other */}
         <div>
           <label htmlFor="cz-type" className={labelCls}>
-            Product type
+            {activeStream.label} — which?
           </label>
           <div className="relative">
             <select
@@ -298,7 +355,7 @@ export function CustomRequestForm() {
               onChange={(e) => setProductType(e.target.value as ProductType)}
               className={`${inputCls} cursor-pointer appearance-none pr-10`}
             >
-              {PRODUCT_TYPES.map((t) => (
+              {[...activeStream.types, "Other" as const].map((t) => (
                 <option key={t} value={t} className="bg-ink-2 text-ivory">
                   {t}
                 </option>
@@ -424,7 +481,7 @@ export function CustomRequestForm() {
             rows={4}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Tell us about the event, text to engrave, deadline…"
+            placeholder={activeStream.asks}
             className={`${inputCls} resize-y`}
           />
         </div>

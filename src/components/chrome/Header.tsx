@@ -43,8 +43,12 @@ const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
  */
 const LEFT_LINKS = [
   { href: "/journal", label: "Journal" },
-  { href: "/customization", label: "Customized Designs" },
-  { href: "/category/gifting", label: "Corporate" },
+  /* Customized Designs goes straight to the trophies catalogue — that is
+     where a customer looking for "designs" expects to land. The narrative
+     /customization page still exists and is linked from the catalogue and
+     the footer, it simply no longer occupies a nav slot. */
+  { href: "/category/trophies", label: "Customized Designs" },
+  { href: "/corporate", label: "Corporate" },
 ] as const;
 
 const RIGHT_LINKS = [

@@ -15,25 +15,28 @@ export const metadata: Metadata = {
 };
 
 /**
- * The commission desk. /customization is the showroom — what bespoke work
- * looks like, the process, the bulk tiers. This page is the doing: brief in,
- * proof out. Both are in the primary nav, so they must not repeat each other.
+ * The commission desk — customer input for all three things we make.
+ * /customization is the showroom (what bespoke work looks like, the process,
+ * the bulk tiers); this page is the doing: brief in, proof out.
+ *
+ * The three streams below mirror STREAMS in customization-constants.ts, which
+ * is what the form itself asks first. Keep the wording in step.
  */
-const WHAT_TO_SEND = [
+const STREAM_CARDS = [
   {
     n: "01",
-    title: "The occasion",
-    body: "What is being honoured, on what date, and how many pieces. The date matters most — it tells us whether the timeline is comfortable or tight.",
+    title: "Trophies & Awards",
+    body: "Cups, crystal, medals, shields and mementos. Tell us the ceremony date, the quantity, and exactly how each name should read — engraving is included, and spelling is the one thing we cannot undo.",
   },
   {
     n: "02",
-    title: "The artwork",
-    body: "A logo, a sketch, a photograph of something you liked. Vector files reproduce most crisply, but we can redraw from a decent image.",
+    title: "Corporate Gifting",
+    body: "Gift boxes, hampers and welcome kits. We need the headcount, a budget per box and the delivery addresses; we will come back with two or three compositions to choose between.",
   },
   {
     n: "03",
-    title: "The words",
-    body: "Exactly how names, titles and citations should read. Engraving is free — spelling is the one thing we cannot undo once it is etched.",
+    title: "Merchandise",
+    body: "Drinkware, desk pieces, bags, apparel, keychains and pins. Send the artwork — vector reproduces most crisply, but we can redraw from a good image — plus quantities and any size breakdown.",
   },
 ];
 
@@ -56,18 +59,19 @@ export default function CraftYourDesignPage() {
               </span>
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-muted md:text-lg">
-              Tell us what you are honouring. A designer picks it up the same working day, and
-              you approve a proof before a single piece is cast.
+              Trophies and awards, corporate gifting, or branded merchandise — brief us on any
+              of the three. A designer picks it up the same working day, and you approve a proof
+              before a single piece is made.
             </p>
             <div className="gold-rule mt-1 w-28" aria-hidden="true" />
           </Reveal>
         </div>
       </section>
 
-      {/* what to send */}
-      <section aria-label="What to send us" className="mx-auto max-w-7xl px-6 pt-6">
+      {/* the three things we take briefs on */}
+      <section aria-label="What we take briefs on" className="mx-auto max-w-7xl px-6 pt-6">
         <ol role="list" className="grid gap-5 md:grid-cols-3">
-          {WHAT_TO_SEND.map((s, i) => (
+          {STREAM_CARDS.map((s, i) => (
             <Reveal
               as="li"
               key={s.n}
