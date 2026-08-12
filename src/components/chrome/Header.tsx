@@ -1,9 +1,10 @@
 "use client";
 
 /**
- * Site header — fixed transparent chrome (h-[var(--header-h)], z-50).
- * See .header-chrome in globals.css: no background, so the hero video and
- * page art run clean underneath.
+ * Site header — fixed chrome (h-[var(--header-h)], z-50).
+ * See .header-chrome in globals.css: a dark bar everywhere, except while it
+ * sits over the home page's opening film, where it goes fully transparent so
+ * nothing is painted over the video. That case is flagged by data-over-hero.
  *
  * Always visible, on every route including the home video intro. It used to
  * hide itself on "/" until the intro reported EV_BOOK_PROGRESS >= 0.98 so the
@@ -57,12 +58,21 @@ const RIGHT_LINKS = [
 const PRIMARY_LINKS = [...LEFT_LINKS, ...RIGHT_LINKS] as const;
 
 /**
+ * The one source of nav rhythm: a single gap, shared by both navs, so every
+ * link sits the same distance from its neighbour on either side of the
+ * wordmark. It clamps rather than sitting at a fixed value because seven
+ * uppercase labels only just clear 1536px — the low end keeps them on one
+ * row there, the high end lets them breathe on a wide desktop.
+ */
+const NAV_GAP = "gap-x-[clamp(0.9rem,1.5vw,2.5rem)]";
+
+/**
  * Display is deliberately NOT baked in here: `hidden` and `grid` are both
  * display utilities of equal specificity, so appending `hidden` to a class
  * string already containing `grid` does nothing. Callers add their own.
  */
 const ICON_BTN_BASE =
-  "relative h-10 w-10 place-items-center rounded-full text-muted transition-colors duration-300 hover:bg-white/5 hover:text-champagne cursor-pointer";
+  "relative h-10 w-10 place-items-center rounded-full text-ivory/80 transition-colors duration-300 hover:bg-white/5 hover:text-champagne cursor-pointer";
 
 const ICON_BTN = `grid ${ICON_BTN_BASE}`;
 
@@ -98,11 +108,16 @@ export function Header() {
   const itemCount = totals.itemCount;
   const wishCount = wishlist.length;
 
-  /* Past the first few pixels the transparent chrome takes on a frosted
-     backing (see .header-chrome[data-scrolled] in globals.css) so the nav
-     stays readable once page content is running underneath it. Reads are
-     batched into a rAF and the state only flips on a change, so the
-     listener costs nothing while scrolling. */
+  /* Home is the one route with a full-bleed film behind the chrome, so it is
+     the one route the bar hides on — and only until the page starts moving.
+     Everywhere else the dark bar is present from the first pixel. */
+  const overHero = pathname === "/";
+
+  /* Past the first few pixels the bar goes fully opaque (see
+     .header-chrome[data-scrolled] in globals.css) so the nav stays readable
+     once page content is running underneath it. Reads are batched into a rAF
+     and the state only flips on a change, so the listener costs nothing
+     while scrolling. */
   useEffect(() => {
     let frame = 0;
     const read = () => {
@@ -174,6 +189,7 @@ export function Header() {
     <>
       <header
         data-scrolled={scrolled}
+        data-over-hero={overHero}
         className="header-chrome fixed inset-x-0 top-0 z-50 h-[var(--header-h)]"
       >
         <style>{`@keyframes badge-pop{0%{transform:scale(.4)}55%{transform:scale(1.3)}100%{transform:scale(1)}}`}</style>
@@ -198,7 +214,14 @@ export function Header() {
                 className="h-9 w-auto"
               />
             </Link>
-            <nav aria-label="Primary" className="hidden items-center 2xl:flex">
+            {/* flex-1 + justify-center pulls the links off the logo and into
+                the middle of their half; the gap (not per-link padding) is
+                what makes the spacing between them identical, and clamping it
+                to the viewport keeps all seven on one row at 2xl. */}
+            <nav
+              aria-label="Primary"
+              className={`hidden flex-1 items-center justify-center 2xl:flex ${NAV_GAP}`}
+            >
               {LEFT_LINKS.map((l) => (
                 <NavLink key={l.href} href={l.href} label={l.label} active={isActive(l.href)} />
               ))}
@@ -221,7 +244,10 @@ export function Header() {
 
           {/* right — last four links + actions */}
           <div className="flex flex-1 basis-0 items-center justify-end gap-3">
-            <nav aria-label="Secondary" className="hidden items-center 2xl:flex">
+            <nav
+              aria-label="Secondary"
+              className={`hidden flex-1 items-center justify-center 2xl:flex ${NAV_GAP}`}
+            >
               {RIGHT_LINKS.map((l) => (
                 <NavLink key={l.href} href={l.href} label={l.label} active={isActive(l.href)} />
               ))}
@@ -479,14 +505,18 @@ export function Header() {
   );
 }
 
-/* desktop nav link with gold underline accent */
+/* Desktop nav link with gold underline accent.
+   Bold and near-full-strength ivory rather than the old muted grey: these
+   labels carry the site's navigation and now have to hold up unbacked over
+   the hero film. No horizontal padding — NAV_GAP owns the spacing, so the
+   visible gaps stay equal instead of being padding plus gap. */
 function NavLink({ href, label, active }: { href: string; label: string; active: boolean }) {
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`relative whitespace-nowrap px-2.5 py-2 text-[11px] uppercase tracking-[0.14em] transition-colors duration-300 ${
-        active ? "text-champagne" : "text-muted hover:text-ivory"
+      className={`relative whitespace-nowrap py-2 text-[11px] font-bold uppercase tracking-[0.13em] transition-colors duration-300 ${
+        active ? "text-champagne" : "text-ivory/85 hover:text-champagne"
       }`}
     >
       {label}
@@ -499,7 +529,7 @@ function Underline({ active }: { active: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`absolute inset-x-2.5 bottom-0.5 h-px bg-[linear-gradient(90deg,transparent,var(--color-gold),transparent)] transition-opacity duration-300 ${
+      className={`absolute inset-x-0 bottom-0.5 h-px bg-[linear-gradient(90deg,transparent,var(--color-gold),transparent)] transition-opacity duration-300 ${
         active ? "opacity-100" : "opacity-0"
       }`}
     />

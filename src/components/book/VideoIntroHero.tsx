@@ -45,14 +45,37 @@ interface VideoIntroHeroProps {
   rightPage: IntroPage;
 }
 
-/* The book finishes opening ~7s into the 10s clip, so playback stops there
-   rather than running out the closing hold.
+/* Where the film is parked.
+ *
+ * The clip is 10s at 24fps. The book has finished opening by ~6.5s, but the
+ * camera keeps pushing in afterwards and only comes to rest around 8s —
+ * measured as per-frame luma difference, motion falls 3.9 (t=7.0) → 1.1
+ * (t=8.0) → 0.5 (t=8.2–9.3), then climbs again past 9.5s as the shot starts
+ * moving out. Stopping at 7.0 froze the film mid-move, which is what read as
+ * an abrupt ending; 8.25 lands in the dead-calm window, where only the
+ * sparkles are still twinkling and the freeze is invisible.
+ *
+ * 8.25 × 24 = frame 198 exactly, so pausing here always lands on a whole
+ * frame rather than mid-frame.
+ *
+ * This MUST stay in step with the frame held in posterOpen — that still is
+ * grabbed at exactly this timestamp. The video is paused on it as the still
+ * fades in, so the crossfade is still-over-identical-still and no transition
+ * is visible. Change one and you must regrab the other:
+ *
+ *   ffmpeg -ss 8.25 -i public/Grace-Video8k.mp4 -frames:v 1 open.png
+ *   sharp(open.png).resize(2560,1440,{kernel:'lanczos3'})
+ *     .sharpen({sigma:0.5,m1:0.4,m2:1.0}).webp({quality:92})
+ */
+const OPEN_AT = 8.25;
 
-   This MUST stay in step with the frame held in posterOpen — that still is
-   grabbed at exactly this timestamp. The video is paused and seeked to it as
-   the still fades in, so the crossfade is still-over-identical-still and no
-   transition is visible. Change one and you must regrab the other. */
-const OPEN_AT = 7.0;
+/* One frame at 24fps. Used as the tolerance for "close enough to OPEN_AT" —
+   correcting a sub-frame drift would only cause a needless re-decode. */
+const FRAME = 1 / 24;
+
+/* Any audio is faded down across the last stretch of playback so an unmuted
+   soundtrack settles with the picture instead of being cut off mid-note. */
+const AUDIO_FADE = 1.4;
 
 /* Hotspot rectangles as % of the 1280×720 frame, tracing the left
    ("Premium") and right ("General") pages of the open spread. */
@@ -96,28 +119,78 @@ export function VideoIntroHero({
     });
   }, [reduce]);
 
-  /* Park the film on exactly the frame the still was grabbed from. timeupdate
-     only fires ~4x/sec, so it can overshoot by a few frames — seeking back to
-     OPEN_AT removes the drift, and the sparkles behind the book are moving
-     enough that a few frames would otherwise register as a jump. */
+  /* Park the film on exactly the frame the still was grabbed from. The clock
+     is only corrected when the pause landed more than a frame off: the
+     watcher below stops within a single frame, and seeking backwards over
+     live sparkles is itself the jump the freeze exists to avoid. */
   const freezeAtOpenFrame = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
     v.pause();
-    try {
-      v.currentTime = OPEN_AT;
-    } catch {
-      /* not seekable yet — the still fades in over it regardless */
+    if (Math.abs(v.currentTime - OPEN_AT) > FRAME) {
+      try {
+        v.currentTime = OPEN_AT;
+      } catch {
+        /* not seekable yet — the still fades in over it regardless */
+      }
     }
   }, []);
 
-  const onTimeUpdate = () => {
-    if (opened) return;
-    if ((videoRef.current?.currentTime ?? 0) >= OPEN_AT) {
-      freezeAtOpenFrame();
-      open();
+  /* Frame-accurate stop.
+     `timeupdate` fires only ~4×/sec, so it overshot OPEN_AT by up to six
+     frames and the correcting seek yanked the picture visibly backwards —
+     the single biggest reason the ending did not read as clean.
+     requestVideoFrameCallback runs once per *presented* frame, so playback
+     halts within one frame and there is nothing left to correct. rAF is the
+     fallback where rVFC is missing (Firefox). */
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || reduce) return;
+
+    const media = v as HTMLVideoElement & {
+      requestVideoFrameCallback?: (cb: () => void) => number;
+      cancelVideoFrameCallback?: (handle: number) => void;
+    };
+    const useRvfc = typeof media.requestVideoFrameCallback === "function";
+    let handle = 0;
+
+    function schedule() {
+      handle = useRvfc
+        ? media.requestVideoFrameCallback!(tick)
+        : window.requestAnimationFrame(tick);
     }
-  };
+
+    function tick() {
+      handle = 0;
+      if (openedRef.current) return;
+
+      const t = v!.currentTime;
+
+      /* ride the soundtrack down with the picture rather than cutting it */
+      if (!v!.muted) {
+        v!.volume = Math.min(1, Math.max(0, (OPEN_AT - t) / AUDIO_FADE));
+      }
+
+      /* Half a frame of lead. Stopping *at* OPEN_AT would hang on float
+         error — 8.2499999 fails the test, so the next frame overshoots and
+         has to be seeked back, which is the jump we came here to remove.
+         The lead can only ever land us on the frame before, and one frame
+         apart in this passage is a sparkle, not a movement. */
+      if (t >= OPEN_AT - FRAME / 2) {
+        freezeAtOpenFrame();
+        open();
+        return;
+      }
+      schedule();
+    }
+
+    schedule();
+    return () => {
+      if (!handle) return;
+      if (useRvfc) media.cancelVideoFrameCallback?.(handle);
+      else window.cancelAnimationFrame(handle);
+    };
+  }, [reduce, open, freezeAtOpenFrame]);
 
   const skip = () => {
     freezeAtOpenFrame();
@@ -158,9 +231,8 @@ export function VideoIntroHero({
           playsInline
           autoPlay={!reduce}
           preload="auto"
-          onTimeUpdate={onTimeUpdate}
-          /* safety net: if timeupdate never fires, still park on the open
-             frame rather than leaving the closing hold under the still */
+          /* safety net: if the frame watcher never runs, still park on the
+             open frame rather than leaving the closing hold under the still */
           onEnded={skip}
         />
 
@@ -171,7 +243,10 @@ export function VideoIntroHero({
           fill
           priority
           sizes="100vw"
-          className={`object-cover transition-opacity duration-700 ${
+          /* Long, decelerating dissolve. The frame underneath is identical, so
+             the only thing crossfading is the still's extra sharpness — over
+             1.2s that reads as the picture settling, not as a cut. */
+          className={`object-cover transition-opacity duration-[1200ms] ease-[cubic-bezier(0.33,1,0.68,1)] ${
             opened ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         />
@@ -188,33 +263,47 @@ export function VideoIntroHero({
           the centred wordmark, so both were duplicated — and anything above
           y=var(--header-h) would sit underneath it (header is z-50). */}
 
-      {/* in-video controls (while playing) */}
-      {!opened && (
-        <>
-          <button
-            type="button"
-            onClick={skip}
-            /* clear of the fixed header, which now overlays the intro */
-            className="absolute right-4 top-[calc(var(--header-h)+0.75rem)] z-30 rounded-full border border-white/15 bg-black/40 px-4 py-1.5 text-xs font-medium tracking-[0.18em] text-ivory/90 backdrop-blur-md transition-colors hover:border-gold/40 hover:text-champagne"
-          >
-            SKIP INTRO →
-          </button>
-          <button
-            type="button"
-            onClick={toggleSound}
-            aria-label={muted ? "Unmute" : "Mute"}
-            title={muted ? "Unmute" : "Mute"}
-            className="absolute bottom-5 left-4 z-30 grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-black/40 text-ivory/90 backdrop-blur-md transition-colors hover:border-gold/40 hover:text-champagne"
-          >
-            {muted ? <IconMuted /> : <IconSound />}
-          </button>
-        </>
-      )}
+      {/* In-video controls. Faded rather than unmounted: popping them out of
+          existence on the same tick the film stopped was its own little jolt
+          at the end of the intro. */}
+      {/* inset-0 rather than a bare wrapper: fading opacity creates a stacking
+          context, so the layer needs its own z-30 to stay above the hotspots,
+          and its own box for the buttons to anchor against. */}
+      <div
+        aria-hidden={opened}
+        className={`pointer-events-none absolute inset-0 z-30 transition-opacity duration-500 ease-out ${
+          opened ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        <button
+          type="button"
+          onClick={skip}
+          tabIndex={opened ? -1 : 0}
+          /* clear of the fixed header, which now overlays the intro */
+          className="pointer-events-auto absolute right-4 top-[calc(var(--header-h)+0.75rem)] rounded-full border border-white/15 bg-black/40 px-4 py-1.5 text-xs font-medium tracking-[0.18em] text-ivory/90 backdrop-blur-md transition-colors hover:border-gold/40 hover:text-champagne disabled:pointer-events-none"
+          disabled={opened}
+        >
+          SKIP INTRO →
+        </button>
+        <button
+          type="button"
+          onClick={toggleSound}
+          tabIndex={opened ? -1 : 0}
+          disabled={opened}
+          aria-label={muted ? "Unmute" : "Mute"}
+          title={muted ? "Unmute" : "Mute"}
+          className="pointer-events-auto absolute bottom-5 left-4 grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-black/40 text-ivory/90 backdrop-blur-md transition-colors hover:border-gold/40 hover:text-champagne disabled:pointer-events-none"
+        >
+          {muted ? <IconMuted /> : <IconSound />}
+        </button>
+      </div>
 
       {/* invitation, revealed with the open spread */}
       <p
+        /* held back until the dissolve is most of the way through, so the line
+           arrives on a settled picture instead of racing it */
         className={`pointer-events-none absolute inset-x-0 bottom-6 z-20 mx-auto max-w-xl px-4 text-center text-sm tracking-[0.16em] text-ivory/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.7)] transition-opacity duration-700 ${
-          opened ? "opacity-100" : "opacity-0"
+          opened ? "opacity-100 delay-700" : "opacity-0"
         }`}
       >
         Choose a collection — or{" "}

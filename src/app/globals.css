@@ -205,53 +205,45 @@ body {
   border-bottom: 1px solid rgba(212, 175, 55, 0.14);
 }
 
-/* Site header — transparent. No bar, no blur, no rule: the hero video and
-   page art run clean underneath. Separate from .glass because the Toaster
-   still needs the frosted pill.
+/* Site header — a dark bar, except over the hero film where it disappears.
+   Separate from .glass because the Toaster still needs the frosted pill.
 
-   The gradient is not a background — it fades to zero well inside the
-   header's own height, so there is no edge to see. It exists because the
-   catalogue heroes are bright studio sweeps: bare, the nav type dropped to
-   an unreadable grey-on-grey over /products and every /category page. */
+   Two states, driven by data attributes the Header sets:
+
+     default / [data-scrolled]  → solid dark bar (this is the site's chrome)
+     [data-over-hero] & !scrolled → nothing at all: no bar, no scrim, no rule,
+                                    so the opening film plays untouched
+
+   It used to be the other way round — bare everywhere, with a soft scrim for
+   legibility — but the scrim was itself a visible smudge across the top of
+   the hero video, and the bar read too pale against the rest of the site. */
 .header-chrome {
-  /* background-image carries the scrim, background-color carries the veil
-     that fades in on scroll — kept on separate properties so each can be
-     transitioned independently. Both gradients share a stop structure, so
-     the browser can interpolate between them. */
-  background-image: linear-gradient(
-    180deg,
-    rgba(8, 8, 9, 0.8) 0%,
-    rgba(8, 8, 9, 0.46) 55%,
-    rgba(8, 8, 9, 0) 100%
-  );
-  background-color: transparent;
-  /* No border. A `border-bottom: 1px solid transparent` reserves a row that
-     the backdrop is not painted through, which drew a visible dark hairline
-     straight across the hero. The scrolled rule is an inset shadow instead —
-     it tints an existing row rather than reserving one, so there is nothing
-     to see until the bar itself appears. */
-  border: 0;
-  box-shadow: none;
-  transition:
-    background-color 0.45s var(--ease-lux),
-    background-image 0.45s var(--ease-lux),
-    box-shadow 0.45s var(--ease-lux);
-}
-
-/* scrolled: the scrim gives way to a frosted bar */
-.header-chrome[data-scrolled="true"] {
-  background-image: linear-gradient(
-    180deg,
-    rgba(8, 8, 9, 0) 0%,
-    rgba(8, 8, 9, 0) 55%,
-    rgba(8, 8, 9, 0) 100%
-  );
-  background-color: rgba(16, 16, 20, 0.88);
+  /* background-image stays declared (as "none") so the transparent state can
+     interpolate to and from the ivory theme's scrim; background-color carries
+     the bar. Kept on separate properties so each transitions independently. */
+  background-image: none;
+  background-color: rgba(9, 9, 11, 0.94);
   backdrop-filter: blur(20px) saturate(1.35);
   -webkit-backdrop-filter: blur(20px) saturate(1.35);
+  /* No border. A `border-bottom: 1px solid transparent` reserves a row that
+     the backdrop is not painted through, which drew a visible dark hairline
+     straight across the hero. The rule is an inset shadow instead — it tints
+     an existing row rather than reserving one, so there is nothing to see
+     once the bar goes transparent. */
+  border: 0;
   box-shadow:
     inset 0 -1px 0 rgba(212, 175, 55, 0.22),
     0 10px 30px -18px rgba(0, 0, 0, 0.9);
+  transition:
+    background-color 0.45s var(--ease-lux),
+    background-image 0.45s var(--ease-lux),
+    box-shadow 0.45s var(--ease-lux),
+    backdrop-filter 0.45s var(--ease-lux);
+}
+
+/* scrolled: fully opaque — page content is running underneath by now */
+.header-chrome[data-scrolled="true"] {
+  background-color: rgba(9, 9, 11, 0.97);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -260,28 +252,42 @@ body {
   }
 }
 
-/* The light palette is the one case that cannot go bare: it flips the nav
-   type dark while the hero art behind it stays dark, so the header would be
-   unreadable on every hero. It keeps a scrim that fades to nothing. */
+/* The light palette keeps a light bar: it flips the nav type dark, so a dark
+   bar would leave near-black text on near-black. */
 :root[data-theme="ivory"] .header-chrome {
+  background-color: rgba(255, 253, 248, 0.94);
+  box-shadow:
+    inset 0 -1px 0 rgba(184, 144, 46, 0.2),
+    0 10px 30px -18px rgba(0, 0, 0, 0.25);
+}
+:root[data-theme="ivory"] .header-chrome[data-scrolled="true"] {
+  background-color: rgba(255, 253, 248, 0.97);
+}
+
+/* ── over the hero film ──────────────────────────────────────────────
+   Last, so it outranks the ivory rules above on equal specificity.
+   The bar vanishes entirely; a soft shadow under the type is what keeps
+   the nav readable against the moving picture. */
+.header-chrome[data-over-hero="true"]:not([data-scrolled="true"]) {
+  background-color: transparent;
+  background-image: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Ivory is the exception it always was: near-black nav type over a dark film
+   needs something behind it, so this one palette keeps a scrim that fades to
+   nothing rather than going fully bare. */
+:root[data-theme="ivory"] .header-chrome[data-over-hero="true"]:not([data-scrolled="true"]) {
   background-image: linear-gradient(
     180deg,
     rgba(247, 243, 234, 0.94) 0%,
     rgba(247, 243, 234, 0.6) 55%,
     rgba(247, 243, 234, 0) 100%
   );
-}
-:root[data-theme="ivory"] .header-chrome[data-scrolled="true"] {
-  background-image: linear-gradient(
-    180deg,
-    rgba(247, 243, 234, 0) 0%,
-    rgba(247, 243, 234, 0) 55%,
-    rgba(247, 243, 234, 0) 100%
-  );
-  background-color: rgba(255, 253, 248, 0.82);
-  box-shadow:
-    inset 0 -1px 0 rgba(184, 144, 46, 0.2),
-    0 10px 30px -18px rgba(0, 0, 0, 0.25);
+  text-shadow: none;
 }
 
 /* card surface for products on the dark stage */
